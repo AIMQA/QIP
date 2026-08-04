@@ -63,6 +63,15 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .ndel{background:#b8c4c8;right:-8px;top:-8px;font-size:11px}
 .ndel:hover{background:#c0392b}
 .node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel{display:block}
+#who{display:none;padding:10px 22px 0}
+.whoin{width:1120px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.whohead{font-size:10px;font-weight:bold;letter-spacing:1.6px;color:var(--teal)}
+.whohead a{color:var(--grey);font-weight:normal;letter-spacing:0;float:right;font-size:10.5px}
+.wholine{font-size:11px;color:var(--navy);margin:4px 0 8px}
+.whogrid{display:flex;gap:8px;flex-wrap:wrap}
+.whocard{flex:1 1 140px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:10.5px;color:var(--grey)}
+.whocard b{display:block;color:var(--teal);font-size:11px;margin-bottom:1px}
+@media print{#who{display:none!important}}
 .legend{width:1120px;margin:8px auto 0;font-size:10.5px;color:var(--grey);display:flex;gap:18px;flex-wrap:wrap}
 .legend i{font-style:normal;color:var(--teal);font-weight:bold}
 footer{padding:14px 22px;font-size:11px;color:var(--teal)}
@@ -99,6 +108,7 @@ footer span{float:right;color:#9AA5AA}
 
 <div class="hint" id="hint"></div>
 <div id="nodebar"></div>
+<div id="who"></div>
 <div id="wrap"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div>
 <div class="legend" id="legend"></div>
 <footer>AMU Quality Improvement Team&nbsp; | &nbsp;Queen Elizabeth Hospital Birmingham <span>Stage 2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
@@ -218,6 +228,7 @@ function renderProcess(board, svg, nodes){
     }
   }
   svg.innerHTML = markerDefs() + d;
+  $("who").style.display = "none";
   $("hint").innerHTML = "<b>Process map:</b> click a box to select it and type straight in. Use the bar below to change its shape, add the next step, or reorder. Map what <i>actually</i> happens \u2014 walk the route with the people who do the work.";
   $("legend").innerHTML = "<span><i>Pill</i> start / end</span><span><i>Box</i> step</span><span><i>Diamond</i> decision (note the \u2018no\u2019 route underneath)</span><span><i>Dashed</i> wait / delay</span>";
   renderProcessBar();
@@ -327,6 +338,24 @@ function renderDriver(board, svg, nodes){
   $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
   const bar = $("nodebar"); bar.innerHTML = "";
   const l = document.createElement("span"); l.className = "lbl"; l.textContent = "HOVER ANY BOX FOR + / \u00D7 CONTROLS"; bar.appendChild(l);
+  renderWho();
+}
+const WHO = [
+  ["Effective", "is the right, evidence-based care happening?"],
+  ["Safe", "could harm or error be designed out?"],
+  ["People-centred", "does care follow the patient\u2019s needs and preferences?"],
+  ["Timely", "where are the waits and harmful delays?"],
+  ["Equitable", "is quality the same whoever the patient is?"],
+  ["Integrated", "does care join up across the pathway?"],
+  ["Efficient", "is effort or resource being wasted?"]
+];
+function renderWho(){
+  const w = $("who");
+  w.style.display = "block";
+  w.innerHTML = '<div class="whoin"><div class="whohead">WHO QUALITY LENS \u2014 SEVEN MARKS OF A QUALITY HEALTH SERVICE' +
+    '<a href="https://www.who.int/health-topics/quality-of-care" target="_blank" rel="noopener">Source: WHO \u2014 Quality of care</a></div>' +
+    '<div class="wholine">Test your diagram against these: a strong <b>aim</b> targets at least one \u2014 and each <b>driver</b> should say what must change on your ward to deliver it.</div>' +
+    '<div class="whogrid">' + WHO.map(d => '<div class="whocard"><b>' + d[0] + '</b>' + d[1] + '</div>').join('') + '</div></div>';
 }
 function elbow(a, b){
   const x1 = a.x + a.w, y1 = a.y + DH / 2, x2 = b.x, y2 = b.y + DH / 2, xm = (x1 + x2) / 2;
