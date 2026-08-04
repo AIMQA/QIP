@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMU QIP Diagram Tool — process maps & driver diagrams</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<style>
+:root{
+  --dark:#2C4A52; --teal:#0A7E8C; --sea:#2E9E8F; --aqua:#D6F0F2; --bg:#F0F8F9;
+  --navy:#1B2A3B; --line:#D5E2E5; --grey:#5A6A70; --mint:#7FD4CB; --ph:#8A99A0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Calibri,'Segoe UI',Arial,sans-serif;color:var(--navy);background:var(--bg)}
+header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.brand .eyebrow{font-size:10px;letter-spacing:2px;font-weight:bold;color:var(--mint)}
+.brand h1{margin:2px 0 0;font-size:20px}
+.tabs{display:flex;gap:8px;margin-left:18px}
+.tab{border:1px solid var(--sea);background:transparent;color:#fff;padding:7px 16px;border-radius:18px;cursor:pointer;font:inherit;font-size:13px}
+.tab.on{background:var(--sea);font-weight:bold}
+.spacer{flex:1}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--sea);background:transparent;color:#fff;padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:12.5px}
+.btn:hover{background:#3E626C}
+.btn.primary{background:var(--sea);border-color:var(--sea);font-weight:bold}
+.hint{padding:9px 22px;font-size:12.5px;color:var(--grey);background:#fff;border-bottom:1px solid var(--line)}
+.hint b{color:var(--teal)}
+#nodebar{padding:8px 22px;background:#fff;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:44px}
+#nodebar .lbl{font-size:11px;letter-spacing:1.2px;font-weight:bold;color:var(--teal)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer;color:var(--navy)}
+.seg button.on{background:var(--teal);color:#fff;font-weight:bold}
+.tbtn{border:1px solid var(--line);background:#fff;color:var(--navy);padding:6px 11px;border-radius:8px;cursor:pointer;font:inherit;font-size:12px}
+.tbtn:hover{border-color:var(--teal);color:var(--teal)}
+.tbtn.danger:hover{border-color:#c0392b;color:#c0392b}
+#wrap{padding:18px 22px;overflow:auto}
+#board{position:relative;width:1120px;background:#fff;border:1px solid var(--line);border-radius:10px;margin:0 auto}
+#lines{position:absolute;inset:0;pointer-events:none}
+.colhead{position:absolute;top:10px;font-size:10px;font-weight:bold;letter-spacing:1.6px;color:var(--teal)}
+.node{position:absolute;font-size:11.5px;line-height:1.25}
+.ntext{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 9px;outline:none;overflow:hidden}
+.ntext:empty:before{content:attr(data-ph);color:var(--ph);font-style:italic}
+.node.sel .shape, .dnode.sel{box-shadow:0 0 0 2.5px var(--sea)}
+.shape{position:absolute;inset:0;border-radius:8px;background:#fff;border:1.6px solid var(--teal)}
+.node.terminator .shape{border-radius:44px;background:var(--dark);border-color:var(--dark)}
+.node.terminator .ntext{color:#fff;font-weight:bold}
+.node.decision .shape{border:0;background:transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 84" preserveAspectRatio="none"><polygon points="75,2 148,42 75,82 2,42" fill="%23D6F0F2" stroke="%230A7E8C" stroke-width="2.4"/></svg>') center/100% 100% no-repeat}
+.node.decision .ntext{padding:10px 24px;font-size:10.5px}
+.node.wait .shape{border-style:dashed;background:var(--bg)}
+.node.wait .ntext{font-style:italic}
+.nobranch{position:absolute;left:-8px;right:-8px;top:100%;margin-top:3px;font-size:9.5px;font-style:italic;color:var(--grey);text-align:center;outline:none}
+.nobranch:empty:before{content:'if no: click to note…';color:var(--ph)}
+.dnode{position:absolute;background:var(--bg);border:1.4px solid var(--line);border-radius:8px;font-size:11.5px}
+.dnode .ntext{align-items:center;text-align:left;padding:7px 10px}
+.dnode.aim{background:var(--dark);border-color:var(--dark)}
+.dnode.aim .ntext{color:#fff;font-weight:bold}
+.dnode.primary{background:var(--aqua);border-color:var(--teal)}
+.dnode.primary .ntext{font-weight:bold;color:var(--teal)}
+.dnode.secondary{background:#fff;border-color:var(--teal)}
+.dnode.idea{background:var(--bg)}
+.nadd,.ndel{position:absolute;width:20px;height:20px;border-radius:50%;border:0;color:#fff;font-size:13px;line-height:20px;text-align:center;cursor:pointer;padding:0;display:none}
+.nadd{background:var(--sea);right:-10px;top:calc(50% - 10px)}
+.ndel{background:#b8c4c8;right:-8px;top:-8px;font-size:11px}
+.ndel:hover{background:#c0392b}
+.node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel{display:block}
+.legend{width:1120px;margin:8px auto 0;font-size:10.5px;color:var(--grey);display:flex;gap:18px;flex-wrap:wrap}
+.legend i{font-style:normal;color:var(--teal);font-weight:bold}
+footer{padding:14px 22px;font-size:11px;color:var(--teal)}
+footer span{float:right;color:#9AA5AA}
+@media print{
+  header,.hint,#nodebar,.legend,footer{display:none!important}
+  body{background:#fff}
+  #wrap{padding:0;overflow:visible}
+  #board{border:0;margin:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="eyebrow">AMU QUALITY IMPROVEMENT TEAM</div>
+    <h1>QIP Diagram Tool</h1>
+  </div>
+  <div class="tabs">
+    <button class="tab on" id="tabP" onclick="setMode('process')">Process Map</button>
+    <button class="tab" id="tabD" onclick="setMode('driver')">Driver Diagram</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="actions">
+    <button class="btn" onclick="loadExample()">Load example</button>
+    <button class="btn" onclick="clearMode()">Clear</button>
+    <button class="btn" onclick="openFile()">Open…</button>
+    <button class="btn" onclick="saveFile()">Save file</button>
+    <button class="btn" onclick="window.print()">Print / PDF</button>
+    <button class="btn primary" onclick="exportPNG()">Download PNG</button>
+    <input type="file" id="filein" accept=".json" style="display:none">
+  </div>
+</header>
+
+<div class="hint" id="hint"></div>
+<div id="nodebar"></div>
+<div id="wrap"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div>
+<div class="legend" id="legend"></div>
+<footer>AMU Quality Improvement Team&nbsp; | &nbsp;Queen Elizabeth Hospital Birmingham <span>Stage 2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
+
+<script>
+"use strict";
+/* ---------- state ---------- */
+let uid = 1; const nid = () => "n" + (uid++);
+const state = {
+  mode: "process",
+  process: [],
+  driver: { aim: "", primaries: [] },
+  sel: null
+};
+function blankProcess(){ return [
+  { id: nid(), type: "terminator", text: "Start" },
+  { id: nid(), type: "step", text: "" },
+  { id: nid(), type: "step", text: "" },
+  { id: nid(), type: "terminator", text: "End" }
+];}
+function blankDriver(){ return { aim: "", primaries: [
+  { id: nid(), text: "", secondaries: [ { id: nid(), text: "", ideas: [ { id: nid(), text: "" } ] } ] }
+]};}
+state.process = blankProcess();
+state.driver = blankDriver();
+
+/* ---------- examples (VTE — matches the workbook & decks) ---------- */
+function loadExample(){
+  if (state.mode === "process"){
+    state.process = [
+      { id: nid(), type: "terminator", text: "Patient arrives on AMU" },
+      { id: nid(), type: "step", text: "Clerked by admitting doctor" },
+      { id: nid(), type: "step", text: "Drug chart written" },
+      { id: nid(), type: "decision", text: "VTE section completed?", no: "chart flagged at board round" },
+      { id: nid(), type: "step", text: "Pharmacist screens chart" },
+      { id: nid(), type: "wait", text: "Wait for drug round" },
+      { id: nid(), type: "step", text: "First doses given" },
+      { id: nid(), type: "terminator", text: "Patient on ward routine" }
+    ];
+  } else {
+    state.driver = { aim: "Increase completed VTE assessments on AMU from 60% to 90% by Mar 2027",
+      primaries: [
+        { id: nid(), text: "Prescriber awareness", secondaries: [
+          { id: nid(), text: "Doctors know it\u2019s expected at clerking", ideas: [
+            { id: nid(), text: "Teaching slot at induction" },
+            { id: nid(), text: "Poster in doctors\u2019 office" } ] } ] },
+        { id: nid(), text: "Easy to do in the moment", secondaries: [
+          { id: nid(), text: "Prompt at the point of prescribing", ideas: [
+            { id: nid(), text: "Sticker on every new drug chart" } ] },
+          { id: nid(), text: "Chart design supports it", ideas: [
+            { id: nid(), text: "Pre-printed VTE box on the chart" } ] } ] },
+        { id: nid(), text: "Feedback & ownership", secondaries: [
+          { id: nid(), text: "Team sees its own data", ideas: [
+            { id: nid(), text: "Weekly run chart at board round" } ] } ] }
+      ] };
+  }
+  state.sel = null; render();
+}
+function clearMode(){
+  if (!confirm("Clear the current diagram?")) return;
+  if (state.mode === "process") state.process = blankProcess(); else state.driver = blankDriver();
+  state.sel = null; render();
+}
+
+/* ---------- shared ---------- */
+const $ = id => document.getElementById(id);
+function setMode(m){ state.mode = m; state.sel = null; render(); }
+function esc(t){ const d = document.createElement("div"); d.textContent = t || ""; return d.innerHTML; }
+function focusEnd(el){
+  if (!el) return;
+  el.focus();
+  const r = document.createRange(); r.selectNodeContents(el); r.collapse(false);
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function editable(cls, txt, ph, oninput){
+  const d = document.createElement("div");
+  d.className = cls; d.contentEditable = "true"; d.spellcheck = false;
+  d.setAttribute("data-ph", ph); d.innerText = txt || "";
+  d.addEventListener("input", () => oninput(d.innerText));
+  return d;
+}
+
+/* ---------- PROCESS MAP ---------- */
+const PW = 150, PH = 84, GX = 46, GY = 78, COLS = 5, PAD = 26;
+function pPos(i){
+  const row = Math.floor(i / COLS); let col = i % COLS;
+  if (row % 2 === 1) col = COLS - 1 - col;
+  return { x: PAD + col * (PW + GX), y: PAD + row * (PH + GY), row: row, col: col };
+}
+function renderProcess(board, svg, nodes){
+  const list = state.process;
+  const rows = Math.max(1, Math.ceil(list.length / COLS));
+  board.style.height = (rows * (PH + GY) - GY + PAD * 2) + "px";
+  list.forEach((n, i) => {
+    const p = pPos(i);
+    const el = document.createElement("div");
+    el.className = "node " + n.type + (state.sel === n.id ? " sel" : "");
+    el.style.cssText = "left:" + p.x + "px;top:" + p.y + "px;width:" + PW + "px;height:" + PH + "px";
+    el.innerHTML = '<div class="shape"></div>';
+    el.appendChild(editable("ntext", n.text, "click to type\u2026", v => { n.text = v; }));
+    if (n.type === "decision") el.appendChild(editable("nobranch", n.no, "", v => { n.no = v; }));
+    el.addEventListener("mousedown", () => { if (state.sel !== n.id){ state.sel = n.id; render(); } });
+    nodes.appendChild(el);
+    if (state.sel === n.id) focusEnd(el.querySelector(".ntext"));
+  });
+  // arrows
+  let d = "";
+  for (let i = 0; i < list.length - 1; i++){
+    const a = pPos(i), b = pPos(i + 1);
+    if (a.row === b.row){
+      const y = a.y + PH / 2;
+      if (b.x > a.x) d += arrow(a.x + PW, y, b.x - 3, y, svg);
+      else d += arrow(a.x, y, b.x + PW + 3, y, svg);
+    } else {
+      const x = a.x + PW / 2;
+      d += arrow(x, a.y + PH, x, b.y - 3, svg);
+    }
+  }
+  svg.innerHTML = markerDefs() + d;
+  $("hint").innerHTML = "<b>Process map:</b> click a box to select it and type straight in. Use the bar below to change its shape, add the next step, or reorder. Map what <i>actually</i> happens \u2014 walk the route with the people who do the work.";
+  $("legend").innerHTML = "<span><i>Pill</i> start / end</span><span><i>Box</i> step</span><span><i>Diamond</i> decision (note the \u2018no\u2019 route underneath)</span><span><i>Dashed</i> wait / delay</span>";
+  renderProcessBar();
+}
+function arrow(x1, y1, x2, y2){
+  return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#0A7E8C" stroke-width="2" marker-end="url(#arr)"/>';
+}
+function markerDefs(){
+  return '<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0A7E8C"/></marker></defs>';
+}
+function renderProcessBar(){
+  const bar = $("nodebar"); bar.innerHTML = "";
+  const i = state.process.findIndex(n => n.id === state.sel);
+  const mk = (txt, fn, cls) => { const b = document.createElement("button"); b.className = cls || "tbtn"; b.textContent = txt; b.onclick = fn; bar.appendChild(b); };
+  if (i < 0){
+    const l = document.createElement("span"); l.className = "lbl"; l.textContent = "NOTHING SELECTED \u2014"; bar.appendChild(l);
+    mk("+ Add step at end", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.push(nn); state.sel = nn.id; render(); });
+    return;
+  }
+  const n = state.process[i];
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "SELECTED SHAPE:"; bar.appendChild(l);
+  const seg = document.createElement("div"); seg.className = "seg";
+  [["terminator", "Start / End"], ["step", "Step"], ["decision", "Decision"], ["wait", "Wait"]].forEach(t => {
+    const b = document.createElement("button"); b.textContent = t[1];
+    if (n.type === t[0]) b.className = "on";
+    b.onclick = () => { n.type = t[0]; render(); };
+    seg.appendChild(b);
+  });
+  bar.appendChild(seg);
+  mk("+ Add step after", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.splice(i + 1, 0, nn); state.sel = nn.id; render(); });
+  mk("\u25C0 Move earlier", () => { if (i > 0){ const t = state.process[i - 1]; state.process[i - 1] = n; state.process[i] = t; render(); } });
+  mk("Move later \u25B6", () => { if (i < state.process.length - 1){ const t = state.process[i + 1]; state.process[i + 1] = n; state.process[i] = t; render(); } });
+  mk("Delete", () => { state.process.splice(i, 1); state.sel = null; render(); }, "tbtn danger");
+}
+
+/* ---------- DRIVER DIAGRAM ---------- */
+const DCOL = [
+  { x: 24, w: 190, head: "AIM" },
+  { x: 254, w: 205, head: "PRIMARY DRIVERS" },
+  { x: 499, w: 225, head: "SECONDARY DRIVERS" },
+  { x: 764, w: 330, head: "CHANGE IDEAS" }
+];
+const DH = 66, DSLOT = 82, DTOP = 40;
+function renderDriver(board, svg, nodes){
+  const dv = state.driver;
+  // leaf slots
+  let slot = 0;
+  dv.primaries.forEach(p => {
+    p._y0 = slot;
+    p.secondaries.forEach(sc => {
+      sc._y0 = slot;
+      const leaves = Math.max(1, sc.ideas.length);
+      sc.ideas.forEach((idea, k) => { idea._slot = slot + k; });
+      slot += leaves;
+      sc._y1 = slot - 1;
+    });
+    if (!p.secondaries.length){ slot += 1; }
+    p._y1 = slot - 1;
+  });
+  const totalSlots = Math.max(4, slot);
+  board.style.height = (DTOP + totalSlots * DSLOT + 20) + "px";
+  DCOL.forEach(c => {
+    const h = document.createElement("div"); h.className = "colhead";
+    h.style.left = c.x + "px"; h.textContent = c.head; nodes.appendChild(h);
+  });
+  const yFor = s => DTOP + s * DSLOT;
+  const mid = (a, b) => yFor((a + b) / 2);
+  function card(cls, col, y, txt, ph, oninput, adds, del){
+    const c = DCOL[col];
+    const el = document.createElement("div");
+    el.className = "dnode " + cls + (state.sel === oninput.id ? " sel" : "");
+    el.style.cssText = "left:" + c.x + "px;top:" + y + "px;width:" + c.w + "px;height:" + DH + "px";
+    el.appendChild(editable("ntext", txt, ph, oninput.fn));
+    if (adds){ const b = document.createElement("button"); b.className = "nadd"; b.textContent = "+"; b.title = adds.title;
+      b.onclick = e => { e.stopPropagation(); adds.fn(); }; el.appendChild(b); }
+    if (del){ const b = document.createElement("button"); b.className = "ndel"; b.textContent = "\u00D7"; b.title = "Delete";
+      b.onclick = e => { e.stopPropagation(); if (confirm("Delete this and everything under it?")) del(); }; el.appendChild(b); }
+    nodes.appendChild(el);
+    return { x: c.x, y: y, w: c.w };
+  }
+  let d = "";
+  const aimY = dv.primaries.length ? mid(dv.primaries[0]._y0, dv.primaries[dv.primaries.length - 1]._y1) : yFor(0);
+  const aimPos = card("aim", 0, aimY, dv.aim, "Your SMART aim\u2026", { fn: v => { dv.aim = v; } },
+    { title: "Add primary driver", fn: () => { dv.primaries.push({ id: nid(), text: "", secondaries: [{ id: nid(), text: "", ideas: [{ id: nid(), text: "" }] }] }); render(); } }, null);
+  dv.primaries.forEach(p => {
+    const py = mid(p._y0, p._y1);
+    const pp = card("primary", 1, py, p.text, "Primary driver\u2026", { fn: v => { p.text = v; } },
+      { title: "Add secondary driver", fn: () => { p.secondaries.push({ id: nid(), text: "", ideas: [{ id: nid(), text: "" }] }); render(); } },
+      () => { dv.primaries = dv.primaries.filter(x => x !== p); render(); });
+    d += elbow(aimPos, pp);
+    p.secondaries.forEach(sc => {
+      const sy = mid(sc._y0, sc._y1);
+      const sp = card("secondary", 2, sy, sc.text, "Secondary driver\u2026", { fn: v => { sc.text = v; } },
+        { title: "Add change idea", fn: () => { sc.ideas.push({ id: nid(), text: "" }); render(); } },
+        () => { p.secondaries = p.secondaries.filter(x => x !== sc); render(); });
+      d += elbow(pp, sp);
+      sc.ideas.forEach(idea => {
+        const iy = yFor(idea._slot);
+        const ip = card("idea", 3, iy, idea.text, "Change idea\u2026", { fn: v => { idea.text = v; } }, null,
+          () => { sc.ideas = sc.ideas.filter(x => x !== idea); render(); });
+        d += elbow(sp, ip);
+      });
+    });
+  });
+  svg.innerHTML = d;
+  $("hint").innerHTML = "<b>Driver diagram:</b> type in the boxes; hover a box for <b>+</b> (add the next level) and <b>\u00D7</b> (delete). Read it left to right: to achieve the <b>aim</b>, these <b>drivers</b> must change \u2014 and these <b>change ideas</b> might do it. Pick ONE idea for cycle 1.";
+  $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
+  const bar = $("nodebar"); bar.innerHTML = "";
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "HOVER ANY BOX FOR + / \u00D7 CONTROLS"; bar.appendChild(l);
+}
+function elbow(a, b){
+  const x1 = a.x + a.w, y1 = a.y + DH / 2, x2 = b.x, y2 = b.y + DH / 2, xm = (x1 + x2) / 2;
+  return '<path d="M' + x1 + ',' + y1 + ' L' + xm + ',' + y1 + ' L' + xm + ',' + y2 + ' L' + (x2 - 2) + ',' + y2 + '" fill="none" stroke="#0A7E8C" stroke-width="1.8"/>';
+}
+
+/* ---------- render root ---------- */
+function render(){
+  $("tabP").className = "tab" + (state.mode === "process" ? " on" : "");
+  $("tabD").className = "tab" + (state.mode === "driver" ? " on" : "");
+  const board = $("board"), svg = $("lines"), nodes = $("nodes");
+  nodes.innerHTML = "";
+  svg.innerHTML = markerDefs();
+  if (state.mode === "process") renderProcess(board, svg, nodes); else renderDriver(board, svg, nodes);
+  svg.setAttribute("width", 1120); svg.setAttribute("height", parseInt(board.style.height, 10) || 400);
+}
+document.addEventListener("mousedown", e => {
+  if (!e.target.closest(".node") && !e.target.closest("#nodebar") && state.mode === "process" && state.sel){
+    state.sel = null; render();
+  }
+});
+
+/* ---------- save / open / export ---------- */
+function saveFile(){
+  const blob = new Blob([JSON.stringify({ process: state.process, driver: state.driver }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "qip-diagrams.json"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+function openFile(){ $("filein").click(); }
+$("filein").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const j = JSON.parse(r.result);
+      if (j.process) state.process = j.process;
+      if (j.driver) state.driver = j.driver;
+      state.sel = null; render();
+    } catch (err){ alert("That file could not be read \u2014 it needs to be a qip-diagrams.json saved from this tool."); }
+  };
+  r.readAsText(f); e.target.value = "";
+});
+function exportPNG(){
+  if (typeof html2canvas === "undefined"){
+    alert("PNG export needs an internet connection the first time the page loads. Use Print / PDF instead, or reload when online.");
+    return;
+  }
+  state.sel = null; render();
+  html2canvas($("board"), { backgroundColor: "#ffffff", scale: 2 }).then(cv => {
+    const a = document.createElement("a");
+    a.download = (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
+    a.href = cv.toDataURL("image/png"); a.click();
+  });
+}
+
+/* ---------- boot ---------- */
+const q = new URLSearchParams(location.search);
+if (q.get("mode")) state.mode = q.get("mode") === "driver" ? "driver" : "process";
+render();
+if (q.get("example")) loadExample();
+</script>
+</body>
+</html>
