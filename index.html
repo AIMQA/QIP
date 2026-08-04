@@ -22,9 +22,19 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid var(--sea);background:transparent;color:#fff;padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:12.5px}
 .btn:hover{background:#3E626C}
+.btn:disabled{opacity:.35;cursor:default}
+.btn:disabled:hover{background:transparent}
 .btn.primary{background:var(--sea);border-color:var(--sea);font-weight:bold}
 .hint{padding:9px 22px;font-size:12.5px;color:var(--grey);background:#fff;border-bottom:1px solid var(--line)}
 .hint b{color:var(--teal)}
+#pagebar{padding:8px 22px 0;background:var(--bg);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.plabel{font-size:10px;font-weight:bold;letter-spacing:1.2px;color:var(--grey)}
+.pchip{display:flex;align-items:center;gap:7px;border:1px solid var(--teal);background:#fff;color:var(--teal);padding:5px 8px 5px 13px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:bold}
+.pchip.on{background:var(--teal);color:#fff}
+.pchip .px{width:16px;height:16px;line-height:15px;text-align:center;border-radius:50%;font-size:11px;font-weight:normal;background:rgba(0,0,0,.10)}
+.pchip.on .px{background:rgba(255,255,255,.25)}
+.pchip .px:hover{background:#c0392b;color:#fff}
+.paddbtn{border:1px dashed var(--teal);background:transparent;color:var(--teal);padding:5px 12px;border-radius:16px;cursor:pointer;font:inherit;font-size:12px}
 #nodebar{padding:8px 22px;background:#fff;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:44px}
 #nodebar .lbl{font-size:11px;letter-spacing:1.2px;font-weight:bold;color:var(--teal)}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
@@ -64,18 +74,37 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .ndel:hover{background:#c0392b}
 .node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel{display:block}
 #who{display:none;padding:10px 22px 0}
-.whoin{width:1120px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.whoin{max-width:1120px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .whohead{font-size:10px;font-weight:bold;letter-spacing:1.6px;color:var(--teal)}
 .whohead a{color:var(--grey);font-weight:normal;letter-spacing:0;float:right;font-size:10.5px}
 .wholine{font-size:11px;color:var(--navy);margin:4px 0 8px}
 .whogrid{display:flex;gap:8px;flex-wrap:wrap}
 .whocard{flex:1 1 140px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:10.5px;color:var(--grey)}
 .whocard b{display:block;color:var(--teal);font-size:11px;margin-bottom:1px}
-@media print{#who{display:none!important}}
-.legend{width:1120px;margin:8px auto 0;font-size:10.5px;color:var(--grey);display:flex;gap:18px;flex-wrap:wrap}
+@media print{#who{display:none!important}#pagebar{display:none!important}}
+.legend{max-width:1120px;margin:8px auto 0;padding:0 4px;font-size:10.5px;color:var(--grey);display:flex;gap:18px;flex-wrap:wrap}
 .legend i{font-style:normal;color:var(--teal);font-weight:bold}
 footer{padding:14px 22px;font-size:11px;color:var(--teal)}
 footer span{float:right;color:#9AA5AA}
+#fit{margin:0 auto}
+#board{transform-origin:0 0}
+@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel{display:block}}
+@media (max-width:760px){
+  header{padding:10px 12px;gap:8px}
+  .brand h1{font-size:17px}
+  .tabs{margin-left:0}
+  .tab{padding:6px 12px;font-size:12px}
+  .btn{padding:6px 9px;font-size:11.5px}
+  .hint{padding:8px 12px;font-size:11.5px}
+  #nodebar{padding:8px 12px}
+  #pagebar{padding:8px 12px 0}
+  .tbtn,.seg button{padding:6px 8px;font-size:11.5px}
+  #who{padding:8px 8px 0}
+  #wrap{padding:10px 8px}
+  .legend{font-size:10px;gap:10px}
+  footer{padding:12px 12px 18px;font-size:10px}
+  footer span{float:none;display:block;margin-top:3px}
+}
 @media print{
   header,.hint,#nodebar,.legend,footer{display:none!important}
   body{background:#fff}
@@ -96,20 +125,24 @@ footer span{float:right;color:#9AA5AA}
   </div>
   <div class="spacer"></div>
   <div class="actions">
+    <button class="btn" id="undobtn" onclick="doUndo()" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
+    <button class="btn" id="redobtn" onclick="doRedo()" disabled title="Redo (Ctrl+Y)">↷ Redo</button>
     <button class="btn" onclick="loadExample()">Load example</button>
     <button class="btn" onclick="clearMode()">Clear</button>
     <button class="btn" onclick="openFile()">Open…</button>
     <button class="btn" onclick="saveFile()">Save file</button>
+    <button class="btn" id="fitbtn" onclick="toggleFit()" style="display:none">Zoom 100%</button>
     <button class="btn" onclick="window.print()">Print / PDF</button>
     <button class="btn primary" onclick="exportPNG()">Download PNG</button>
     <input type="file" id="filein" accept=".json" style="display:none">
   </div>
 </header>
 
+<div id="pagebar"></div>
 <div class="hint" id="hint"></div>
 <div id="nodebar"></div>
 <div id="who"></div>
-<div id="wrap"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div>
+<div id="wrap"><div id="fit"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div></div>
 <div class="legend" id="legend"></div>
 <footer>AIM Quality Improvement Team&nbsp; | &nbsp;Queen Elizabeth Hospital Birmingham <span>Stage 2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
 
@@ -132,13 +165,76 @@ function blankProcess(){ return [
 function blankDriver(){ return { aim: "", primaries: [
   { id: nid(), text: "", secondaries: [ { id: nid(), text: "", ideas: [ { id: nid(), text: "" } ] } ] }
 ]};}
-state.process = blankProcess();
-state.driver = blankDriver();
+state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver() }];
+state.cur = 0;
+Object.defineProperty(state, "process", { get(){ return state.pages[state.cur].process; }, set(v){ state.pages[state.cur].process = v; } });
+Object.defineProperty(state, "driver", { get(){ return state.pages[state.cur].driver; }, set(v){ state.pages[state.cur].driver = v; } });
+function uniqueName(base){
+  const names = state.pages.map(p => p.name);
+  if (!names.includes(base)) return base;
+  let i = 2; while (names.includes(base + " " + i)) i++;
+  return base + " " + i;
+}
+function renderPages(){
+  const bar = $("pagebar"); bar.innerHTML = "";
+  const lab = document.createElement("span"); lab.className = "plabel"; lab.textContent = "PAGES"; bar.appendChild(lab);
+  state.pages.forEach((p, i) => {
+    const chip = document.createElement("div");
+    chip.className = "pchip" + (i === state.cur ? " on" : "");
+    chip.title = "Click to open \u00B7 double-click to rename";
+    const nm = document.createElement("span"); nm.textContent = p.name; chip.appendChild(nm);
+    const x = document.createElement("span"); x.className = "px"; x.textContent = "\u00D7"; x.title = "Delete page";
+    x.onclick = ev => { ev.stopPropagation(); delPage(i); };
+    chip.appendChild(x);
+    chip.onclick = () => { if (state.cur !== i){ state.cur = i; state.sel = null; render(); } };
+    chip.ondblclick = ev => { ev.stopPropagation(); renamePage(i); };
+    bar.appendChild(chip);
+  });
+  const add = document.createElement("button"); add.className = "paddbtn"; add.textContent = "+ New page";
+  add.onclick = addPage; bar.appendChild(add);
+}
+function addPage(){
+  beginChange();
+  state.pages.push({ id: nid(), name: uniqueName("Page " + (state.pages.length + 1)), process: blankProcess(), driver: blankDriver() });
+  state.cur = state.pages.length - 1; state.sel = null; render();
+}
+function delPage(i){
+  if (state.pages.length === 1){ alert("This is the only page \u2014 use Clear instead."); return; }
+  if (!confirm("Delete page \u201C" + state.pages[i].name + "\u201D and both its diagrams?")) return;
+  beginChange();
+  state.pages.splice(i, 1);
+  if (i < state.cur) state.cur--;
+  if (state.cur >= state.pages.length) state.cur = state.pages.length - 1;
+  state.sel = null; render();
+}
+function renamePage(i){
+  const v = prompt("Page name:", state.pages[i].name);
+  if (v === null) return;
+  const t = v.trim(); if (!t || t === state.pages[i].name) return;
+  beginChange(); state.pages[i].name = t; render();
+}
+
+/* ---------- history (undo / redo) ---------- */
+const undoStack = [], redoStack = [];
+function snap(){ return JSON.stringify({ pages: state.pages, cur: state.cur }); }
+function pushRaw(s){ if (undoStack[undoStack.length - 1] !== s){ undoStack.push(s); if (undoStack.length > 100) undoStack.shift(); } }
+function beginChange(){ pushRaw(snap()); redoStack.length = 0; updateHistBtns(); }
+function applySnap(s){ const j = JSON.parse(s); state.pages = j.pages; state.cur = Math.min(j.cur || 0, j.pages.length - 1); state.sel = null; render(); }
+function doUndo(){ if (!undoStack.length) return; redoStack.push(snap()); applySnap(undoStack.pop()); updateHistBtns(); }
+function doRedo(){ if (!redoStack.length) return; undoStack.push(snap()); applySnap(redoStack.pop()); updateHistBtns(); }
+function updateHistBtns(){ $("undobtn").disabled = !undoStack.length; $("redobtn").disabled = !redoStack.length; }
+document.addEventListener("keydown", e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  if (document.activeElement && document.activeElement.isContentEditable) return;
+  const k = e.key.toLowerCase();
+  if (k === "z" && !e.shiftKey){ e.preventDefault(); doUndo(); }
+  else if (k === "y" || (k === "z" && e.shiftKey)){ e.preventDefault(); doRedo(); }
+});
 
 /* ---------- examples (VTE — matches the workbook & decks) ---------- */
 function loadExample(){
-  if (state.mode === "process"){
-    state.process = [
+  beginChange();
+  const procEx = [
       { id: nid(), type: "terminator", text: "Patient arrives on AMU" },
       { id: nid(), type: "step", text: "Clerked by admitting doctor" },
       { id: nid(), type: "step", text: "Drug chart written" },
@@ -147,9 +243,8 @@ function loadExample(){
       { id: nid(), type: "wait", text: "Wait for drug round" },
       { id: nid(), type: "step", text: "First doses given" },
       { id: nid(), type: "terminator", text: "Patient on ward routine" }
-    ];
-  } else {
-    state.driver = { aim: "Increase completed VTE assessments on AMU from 60% to 90% by Mar 2027",
+  ];
+  const drvEx = { aim: "Increase completed VTE assessments on AMU from 60% to 90% by Mar 2027",
       primaries: [
         { id: nid(), text: "Prescriber awareness", secondaries: [
           { id: nid(), text: "Doctors know it\u2019s expected at clerking", ideas: [
@@ -164,11 +259,13 @@ function loadExample(){
           { id: nid(), text: "Team sees its own data", ideas: [
             { id: nid(), text: "Weekly run chart at board round" } ] } ] }
       ] };
-  }
+  state.pages.push({ id: nid(), name: uniqueName("Example \u2014 VTE"), process: procEx, driver: drvEx });
+  state.cur = state.pages.length - 1;
   state.sel = null; render();
 }
 function clearMode(){
   if (!confirm("Clear the current diagram?")) return;
+  beginChange();
   if (state.mode === "process") state.process = blankProcess(); else state.driver = blankDriver();
   state.sel = null; render();
 }
@@ -187,7 +284,13 @@ function editable(cls, txt, ph, oninput){
   const d = document.createElement("div");
   d.className = cls; d.contentEditable = "true"; d.spellcheck = false;
   d.setAttribute("data-ph", ph); d.innerText = txt || "";
-  d.addEventListener("input", () => oninput(d.innerText));
+  let base = null;
+  d.addEventListener("focus", () => { base = snap(); });
+  d.addEventListener("blur", () => { base = null; });
+  d.addEventListener("input", () => {
+    if (base !== null){ pushRaw(base); redoStack.length = 0; base = null; updateHistBtns(); }
+    oninput(d.innerText);
+  });
   return d;
 }
 
@@ -210,7 +313,7 @@ function renderProcess(board, svg, nodes){
     el.innerHTML = '<div class="shape"></div>';
     el.appendChild(editable("ntext", n.text, "click to type\u2026", v => { n.text = v; }));
     if (n.type === "decision") el.appendChild(editable("nobranch", n.no, "", v => { n.no = v; }));
-    el.addEventListener("mousedown", () => { if (state.sel !== n.id){ state.sel = n.id; render(); } });
+    el.addEventListener("mousedown", e => { if (state.sel !== n.id){ e.preventDefault(); state.sel = n.id; render(); } });
     nodes.appendChild(el);
     if (state.sel === n.id) focusEnd(el.querySelector(".ntext"));
   });
@@ -242,7 +345,7 @@ function markerDefs(){
 function renderProcessBar(){
   const bar = $("nodebar"); bar.innerHTML = "";
   const i = state.process.findIndex(n => n.id === state.sel);
-  const mk = (txt, fn, cls) => { const b = document.createElement("button"); b.className = cls || "tbtn"; b.textContent = txt; b.onclick = fn; bar.appendChild(b); };
+  const mk = (txt, fn, cls) => { const b = document.createElement("button"); b.className = cls || "tbtn"; b.textContent = txt; b.onclick = () => { beginChange(); fn(); }; bar.appendChild(b); };
   if (i < 0){
     const l = document.createElement("span"); l.className = "lbl"; l.textContent = "NOTHING SELECTED \u2014"; bar.appendChild(l);
     mk("+ Add step at end", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.push(nn); state.sel = nn.id; render(); });
@@ -254,7 +357,7 @@ function renderProcessBar(){
   [["terminator", "Start / End"], ["step", "Step"], ["decision", "Decision"], ["wait", "Wait"]].forEach(t => {
     const b = document.createElement("button"); b.textContent = t[1];
     if (n.type === t[0]) b.className = "on";
-    b.onclick = () => { n.type = t[0]; render(); };
+    b.onclick = () => { beginChange(); n.type = t[0]; render(); };
     seg.appendChild(b);
   });
   bar.appendChild(seg);
@@ -303,9 +406,9 @@ function renderDriver(board, svg, nodes){
     el.style.cssText = "left:" + c.x + "px;top:" + y + "px;width:" + c.w + "px;height:" + DH + "px";
     el.appendChild(editable("ntext", txt, ph, oninput.fn));
     if (adds){ const b = document.createElement("button"); b.className = "nadd"; b.textContent = "+"; b.title = adds.title;
-      b.onclick = e => { e.stopPropagation(); adds.fn(); }; el.appendChild(b); }
+      b.onclick = e => { e.stopPropagation(); beginChange(); adds.fn(); }; el.appendChild(b); }
     if (del){ const b = document.createElement("button"); b.className = "ndel"; b.textContent = "\u00D7"; b.title = "Delete";
-      b.onclick = e => { e.stopPropagation(); if (confirm("Delete this and everything under it?")) del(); }; el.appendChild(b); }
+      b.onclick = e => { e.stopPropagation(); if (confirm("Delete this and everything under it?")){ beginChange(); del(); } }; el.appendChild(b); }
     nodes.appendChild(el);
     return { x: c.x, y: y, w: c.w };
   }
@@ -334,10 +437,10 @@ function renderDriver(board, svg, nodes){
     });
   });
   svg.innerHTML = d;
-  $("hint").innerHTML = "<b>Driver diagram:</b> type in the boxes; hover a box for <b>+</b> (add the next level) and <b>\u00D7</b> (delete). Read it left to right: to achieve the <b>aim</b>, these <b>drivers</b> must change \u2014 and these <b>change ideas</b> might do it. Pick ONE idea for cycle 1.";
+  $("hint").innerHTML = "<b>Driver diagram:</b> type in the boxes; tap or hover a box for <b>+</b> (add the next level) and <b>\u00D7</b> (delete). Read it left to right: to achieve the <b>aim</b>, these <b>drivers</b> must change \u2014 and these <b>change ideas</b> might do it. Pick ONE idea for cycle 1.";
   $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
   const bar = $("nodebar"); bar.innerHTML = "";
-  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "HOVER ANY BOX FOR + / \u00D7 CONTROLS"; bar.appendChild(l);
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "TAP OR HOVER ANY BOX FOR + / \u00D7 CONTROLS"; bar.appendChild(l);
   renderWho();
 }
 const WHO = [
@@ -371,7 +474,25 @@ function render(){
   svg.innerHTML = markerDefs();
   if (state.mode === "process") renderProcess(board, svg, nodes); else renderDriver(board, svg, nodes);
   svg.setAttribute("width", 1120); svg.setAttribute("height", parseInt(board.style.height, 10) || 400);
+  renderPages();
+  applyScale();
 }
+if (state.fit === undefined) state.fit = true;
+function applyScale(){
+  const board = $("board"), fit = $("fit"), wrap = $("wrap"), btn = $("fitbtn");
+  const bw = 1120, bh = parseInt(board.style.height, 10) || 400;
+  const cs = getComputedStyle(wrap);
+  const avail = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const needsFit = avail < bw;
+  const k = (state.fit && needsFit) ? Math.max(0.28, avail / bw) : 1;
+  board.style.transform = k === 1 ? "" : "scale(" + k + ")";
+  fit.style.width = (bw * k) + "px";
+  fit.style.height = (bh * k) + "px";
+  btn.style.display = needsFit ? "inline-block" : "none";
+  btn.textContent = (state.fit && needsFit) ? "Zoom 100%" : "Fit width";
+}
+function toggleFit(){ state.fit = !state.fit; applyScale(); }
+window.addEventListener("resize", applyScale);
 document.addEventListener("mousedown", e => {
   if (!e.target.closest(".node") && !e.target.closest("#nodebar") && state.mode === "process" && state.sel){
     state.sel = null; render();
@@ -380,7 +501,7 @@ document.addEventListener("mousedown", e => {
 
 /* ---------- save / open / export ---------- */
 function saveFile(){
-  const blob = new Blob([JSON.stringify({ process: state.process, driver: state.driver }, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify({ pages: state.pages, cur: state.cur }, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "qip-diagrams.json"; a.click();
   URL.revokeObjectURL(a.href);
@@ -392,8 +513,14 @@ $("filein").addEventListener("change", e => {
   r.onload = () => {
     try {
       const j = JSON.parse(r.result);
-      if (j.process) state.process = j.process;
-      if (j.driver) state.driver = j.driver;
+      beginChange();
+      if (Array.isArray(j.pages) && j.pages.length){
+        state.pages = j.pages;
+        state.cur = Math.min(j.cur || 0, j.pages.length - 1);
+      } else {
+        state.pages.push({ id: nid(), name: uniqueName("Imported"), process: j.process || blankProcess(), driver: j.driver || blankDriver() });
+        state.cur = state.pages.length - 1;
+      }
       state.sel = null; render();
     } catch (err){ alert("That file could not be read \u2014 it needs to be a qip-diagrams.json saved from this tool."); }
   };
@@ -404,12 +531,15 @@ function exportPNG(){
     alert("PNG export needs an internet connection the first time the page loads. Use Print / PDF instead, or reload when online.");
     return;
   }
-  state.sel = null; render();
+  state.sel = null;
+  const prevFit = state.fit;
+  state.fit = false; render();
   html2canvas($("board"), { backgroundColor: "#ffffff", scale: 2 }).then(cv => {
     const a = document.createElement("a");
-    a.download = (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
+    const pgnm = state.pages[state.cur].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    a.download = (pgnm ? pgnm + "-" : "") + (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
     a.href = cv.toDataURL("image/png"); a.click();
-  });
+  }).finally(() => { state.fit = prevFit; applyScale(); });
 }
 
 /* ---------- boot ---------- */
