@@ -34,6 +34,9 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .warrow{text-align:center;font-size:11px;font-style:italic;font-weight:bold;color:var(--teal);padding:5px 0}
 .wcard .ntext,.wprob .ntext{text-align:left}
 .waddw{display:block;margin:10px auto 0;border:1px dashed var(--teal);background:transparent;color:var(--teal);padding:7px 16px;border-radius:18px;cursor:pointer;font:inherit;font-size:13px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:11px 20px;border-radius:22px;font-size:13px;font-weight:bold;box-shadow:0 6px 20px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .25s;z-index:60;max-width:88vw;text-align:center}
+#toast.on{opacity:1}
+@media print{#toast{display:none!important}}
 #pagebar{padding:8px 22px 0;background:var(--bg);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .plabel{font-size:10px;font-weight:bold;letter-spacing:1.2px;color:var(--grey)}
 .pchip{display:flex;align-items:center;gap:7px;border:1px solid var(--teal);background:#fff;color:var(--teal);padding:5px 8px 5px 13px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:bold}
@@ -155,6 +158,7 @@ footer span{float:right;color:#9AA5AA}
     <button class="btn" onclick="clearMode()">Clear</button>
     <button class="btn" onclick="openFile()">Open…</button>
     <button class="btn" onclick="saveFile()">Save file</button>
+    <button class="btn" onclick="shareLink()">Share link</button>
     <button class="btn" id="fitbtn" onclick="toggleFit()" style="display:none">Zoom 100%</button>
     <button class="btn" onclick="doPrint()">Print / PDF</button>
     <button class="btn primary" onclick="exportPNG()">Download PNG</button>
@@ -162,6 +166,7 @@ footer span{float:right;color:#9AA5AA}
   </div>
 </header>
 
+<div id="toast"></div>
 <div id="pagebar"></div>
 <div class="hint" id="hint"></div>
 <div id="nodebar"></div>
@@ -725,10 +730,74 @@ function exportPNG(){
     .finally(() => { state.fit = prevFit; applyScale(); });
 }
 
+/* ---------- share by link (works on a static host \u2014 no server needed) ---------- */
+function b64e(s){ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))); }
+function buildShareUrl(){
+  const payload = b64e(JSON.stringify({ pages: state.pages, cur: state.cur }));
+  return location.origin + location.pathname + "?mode=" + state.mode + "#d=" + payload;
+}
+function showToast(msg, ms){
+  const t = $("toast"); t.textContent = msg; t.className = "on";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { t.className = ""; }, ms || 3500);
+}
+function copyText(txt, ok){
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok).catch(() => fallbackCopy(txt, ok));
+  } else fallbackCopy(txt, ok);
+}
+function fallbackCopy(txt, ok){
+  const ta = document.createElement("textarea");
+  ta.value = txt; ta.setAttribute("readonly", "");
+  ta.style.cssText = "position:fixed;top:0;left:-9999px";
+  document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+  let done = false;
+  try { done = document.execCommand("copy"); } catch (e) {}
+  ta.remove();
+  if (done) ok(); else window.prompt("Copy this link and paste it to your colleague:", txt);
+}
+function shareLink(){
+  const url = buildShareUrl();
+  if (url.length > 12000){
+    alert("These pages are too big for a link. Use \u201CSave file\u201D and send the .json instead \u2014 your colleague opens it with \u201COpen\u2026\u201D.");
+    return;
+  }
+  copyText(url, () => showToast("Link copied \u2014 paste it into Teams, e-mail or your workbook", 4500));
+}
+/* Read a shared diagram out of the URL. replace = fresh load; otherwise merge as extra pages. */
+function loadShared(replace){
+  const m = (location.hash || "").match(/^#d=(.+)$/);
+  if (!m) return false;
+  try {
+    const j = JSON.parse(b64d(m[1]));
+    if (!Array.isArray(j.pages) || !j.pages.length) return false;
+    if (replace){
+      state.pages = j.pages;
+      state.cur = Math.min(j.cur || 0, j.pages.length - 1);
+    } else {
+      beginChange();
+      j.pages.forEach(pg => {
+        pg.id = nid();
+        pg.name = uniqueName((pg.name || "Shared") + " (shared)");
+        state.pages.push(pg);
+      });
+      state.cur = state.pages.length - 1;
+    }
+    state.sel = null;
+    return true;
+  } catch (e){ return false; }
+}
+window.addEventListener("hashchange", () => {
+  if (loadShared(false)){ render(); showToast("Shared pages added \u2014 your own pages are untouched", 4500); }
+});
+
 /* ---------- boot ---------- */
 const q = new URLSearchParams(location.search);
 if (q.get("mode")){ const m = q.get("mode"); state.mode = (m === "driver" || m === "whys") ? m : "process"; }
+const opened = loadShared(true);
 render();
+if (opened) showToast("Opened from a shared link \u2014 edit freely, then Share link to send it back", 6000);
 if (q.get("example")) loadExample();
 </script>
 </body>
