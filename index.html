@@ -74,6 +74,14 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .ndel{background:#768692;right:-8px;top:-8px;font-size:11px}
 .ndel:hover{background:#da291c}
 .node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel,.dnode:hover .nsib{display:block}
+#drvhelp{display:none;padding:10px 22px 0}
+.dgrid{display:flex;gap:8px;flex-wrap:wrap}
+.dcard{flex:1 1 190px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:10.5px;color:var(--navy)}
+.dcard b{display:block;color:var(--teal);font-size:11px;margin-bottom:2px}
+.dcard .tst{display:block;color:var(--teal);font-style:italic;margin-top:4px}
+.dcard .exm{display:block;color:var(--grey);margin-top:3px}
+.dwarn{margin-top:8px;background:var(--aqua);border-radius:8px;padding:7px 10px;font-size:10.5px;color:var(--navy)}
+.dwarn b{color:var(--teal)}
 #who{display:none;padding:10px 22px 0}
 .whoin{max-width:1120px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .whohead{font-size:10px;font-weight:bold;letter-spacing:1.6px;color:var(--teal)}
@@ -82,7 +90,7 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .whogrid{display:flex;gap:8px;flex-wrap:wrap}
 .whocard{flex:1 1 140px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:10.5px;color:var(--grey)}
 .whocard b{display:block;color:var(--teal);font-size:11px;margin-bottom:1px}
-@media print{#who{display:none!important}#pagebar{display:none!important}}
+@media print{#who{display:none!important}#drvhelp{display:none!important}#pagebar{display:none!important}}
 .legend{max-width:1120px;margin:8px auto 0;padding:0 4px;font-size:10.5px;color:var(--grey);display:flex;gap:18px;flex-wrap:wrap}
 .legend i{font-style:normal;color:var(--teal);font-weight:bold}
 footer{padding:14px 22px;font-size:11px;color:var(--teal)}
@@ -101,6 +109,7 @@ footer span{float:right;color:#9AA5AA}
   #pagebar{padding:8px 12px 0}
   .tbtn,.seg button{padding:6px 8px;font-size:11.5px}
   #who{padding:8px 8px 0}
+  #drvhelp{padding:8px 8px 0}
   #wrap{padding:10px 8px}
   .legend{font-size:10px;gap:10px}
   footer{padding:12px 12px 18px;font-size:10px}
@@ -111,11 +120,11 @@ footer span{float:right;color:#9AA5AA}
   body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #wrap{padding:0;overflow:visible}
   #fit{width:auto!important;height:auto!important;margin:0}
-  #board{border:0;margin:0;transform:none!important;zoom:.92}
+  #board{border:0;margin:0;transform:none!important}
   .nadd,.ndel,.nsib{display:none!important}
   .node.sel .shape,.dnode.sel{box-shadow:none!important}
 }
-@page{size:landscape;margin:10mm}
+@page{size:A4 landscape;margin:10mm}
 </style>
 </head>
 <body>
@@ -137,7 +146,7 @@ footer span{float:right;color:#9AA5AA}
     <button class="btn" onclick="openFile()">Open…</button>
     <button class="btn" onclick="saveFile()">Save file</button>
     <button class="btn" id="fitbtn" onclick="toggleFit()" style="display:none">Zoom 100%</button>
-    <button class="btn" onclick="window.print()">Print / PDF</button>
+    <button class="btn" onclick="doPrint()">Print / PDF</button>
     <button class="btn primary" onclick="exportPNG()">Download PNG</button>
     <input type="file" id="filein" accept=".json" style="display:none">
   </div>
@@ -146,6 +155,7 @@ footer span{float:right;color:#9AA5AA}
 <div id="pagebar"></div>
 <div class="hint" id="hint"></div>
 <div id="nodebar"></div>
+<div id="drvhelp"></div>
 <div id="who"></div>
 <div id="wrap"><div id="fit"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div></div>
 <div class="legend" id="legend"></div>
@@ -337,6 +347,7 @@ function renderProcess(board, svg, nodes){
   }
   svg.innerHTML = markerDefs() + d;
   $("who").style.display = "none";
+  $("drvhelp").style.display = "none";
   $("hint").innerHTML = "<b>Process map:</b> click a box to select it and type straight in. Use the bar below to change its shape, add the next step, or reorder. Map what <i>actually</i> happens \u2014 walk the route with the people who do the work.";
   $("legend").innerHTML = "<span><i>Pill</i> start / end</span><span><i>Box</i> step</span><span><i>Diamond</i> decision (note the \u2018no\u2019 route underneath)</span><span><i>Dashed</i> wait / delay</span>";
   renderProcessBar();
@@ -454,7 +465,38 @@ function renderDriver(board, svg, nodes){
   $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
   const bar = $("nodebar"); bar.innerHTML = "";
   const l = document.createElement("span"); l.className = "lbl"; l.textContent = "+ RIGHT = NEXT LEVEL ALONG   \u00B7   + BELOW = ANOTHER AT THIS LEVEL   \u00B7   \u00D7 = DELETE"; bar.appendChild(l);
+  const t = document.createElement("button"); t.className = "tbtn";
+  t.textContent = state.help ? "Hide guidance" : "Show guidance";
+  t.onclick = () => { state.help = !state.help; render(); };
+  bar.appendChild(t);
+  renderDrvHelp();
   renderWho();
+}
+const DRV = [
+  ["Your aim", "What you\u2019re trying to achieve \u2014 with a number and a date.",
+   "Could someone else tell whether you hit it?",
+   "\u201CIncrease completed VTE assessments on AMU from 60% to 90% by Mar 2027.\u201D"],
+  ["Primary drivers", "The 3\u20135 big things that must be true for the aim to happen. Write them as conditions, not actions \u2014 the headings of your theory.",
+   "If all of these were true, would we hit the aim?",
+   "\u201CIt\u2019s easy to do in the moment.\u201D  Common ones: people know what\u2019s expected \u00B7 it\u2019s easy to do \u00B7 the team sees its own data \u00B7 someone owns it."],
+  ["Secondary drivers", "The specific parts of the system that would make that primary driver true \u2014 the bits you can actually get at on your ward.",
+   "If we changed this, would the driver to its left improve?",
+   "\u201CPrompt at the point of prescribing\u201D \u00B7 \u201CChart design supports it.\u201D"],
+  ["Change ideas", "The concrete thing you\u2019ll test in one PDSA cycle. Name the artefact or action.",
+   "Could we start this on Monday?",
+   "\u201CVTE prompt on the clerking proforma.\u201D"]
+];
+function renderDrvHelp(){
+  const w = $("drvhelp");
+  if (!state.help){ w.style.display = "none"; return; }
+  w.style.display = "block";
+  w.innerHTML = '<div class="whoin"><div class="whohead">WHAT GOES IN EACH COLUMN</div>' +
+    '<div class="wholine">Read your diagram as one sentence: <b>we\u2019ll achieve the aim because these primary drivers change \u2014 and each one will change because of these secondary drivers, which we\u2019ll test with these change ideas.</b></div>' +
+    '<div class="dgrid">' + DRV.map(d =>
+      '<div class="dcard"><b>' + d[0] + '</b>' + d[1] +
+      '<span class="tst">Test: ' + d[2] + '</span><span class="exm">e.g. ' + d[3] + '</span></div>').join('') +
+    '</div>' +
+    '<div class="dwarn"><b>Three things that catch people out:</b> &nbsp;1. If it names a poster, checklist or proforma, it\u2019s a change idea \u2014 not a driver. &nbsp;2. If nobody could disagree with it, it\u2019s too vague to be a driver. &nbsp;3. More than five primary drivers usually means some are really secondary ones.</div></div>';
 }
 const WHO = [
   ["Effective", "is the right, evidence-based care happening?"],
@@ -491,6 +533,7 @@ function render(){
   applyScale();
 }
 if (state.fit === undefined) state.fit = true;
+if (state.help === undefined) state.help = true;
 function applyScale(){
   const board = $("board"), fit = $("fit"), wrap = $("wrap"), btn = $("fitbtn");
   const bw = 1120, bh = parseInt(board.style.height, 10) || 400;
@@ -539,6 +582,37 @@ $("filein").addEventListener("change", e => {
   };
   r.readAsText(f); e.target.value = "";
 });
+/* ---------- landscape output helpers ---------- */
+const LAND = 16 / 9;                       // matches the AIM QIP slide decks
+function toLandscape(cv){
+  const M = 48;                            // white margin (at scale 2)
+  let W = cv.width + M * 2, H = cv.height + M * 2;
+  if (W / H < LAND) W = Math.round(H * LAND); else H = Math.round(W / LAND);
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+  g.drawImage(cv, Math.round((W - cv.width) / 2), Math.round((H - cv.height) / 2));
+  return c;
+}
+/* Scale the board to fit one A4 landscape page (10mm margins @96dpi). */
+function printFit(){
+  const board = $("board");
+  const bw = 1120, bh = parseInt(board.style.height, 10) || 400;
+  const pw = (297 - 20) / 25.4 * 96, ph = (210 - 20) / 25.4 * 96;
+  board.style.zoom = Math.min(pw / bw, ph / bh, 1);
+}
+function printReset(){ $("board").style.zoom = ""; }
+window.addEventListener("beforeprint", printFit);
+window.addEventListener("afterprint", printReset);
+function doPrint(){
+  const prevFit = state.fit, prevSel = state.sel;
+  state.sel = null; state.fit = false; render();
+  printFit();
+  window.print();
+  setTimeout(() => { printReset(); state.fit = prevFit; state.sel = prevSel; render(); }, 800);
+}
+
 function exportPNG(){
   if (typeof html2canvas === "undefined"){
     alert("PNG export needs an internet connection the first time the page loads. Use Print / PDF instead, or reload when online.");
@@ -550,7 +624,8 @@ function exportPNG(){
   html2canvas($("board"), { backgroundColor: "#ffffff", scale: 2 }).then(cv => {
     const pgnm = state.pages[state.cur].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
     const name = (pgnm ? pgnm + "-" : "") + (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
-    cv.toBlob(blob => {
+    const out = toLandscape(cv);
+    out.toBlob(blob => {
       if (!blob){ alert("PNG export failed on this device \u2014 try Print / PDF instead."); return; }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
