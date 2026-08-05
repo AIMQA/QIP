@@ -7,8 +7,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <style>
 :root{
-  --dark:#2C4A52; --teal:#0A7E8C; --sea:#2E9E8F; --aqua:#D6F0F2; --bg:#F0F8F9;
-  --navy:#1B2A3B; --line:#D5E2E5; --grey:#5A6A70; --mint:#7FD4CB; --ph:#8A99A0;
+  --dark:#003087; --teal:#005EB8; --sea:#0072CE; --aqua:#D9E7F5; --bg:#F0F4F5;
+  --navy:#231F20; --line:#D8DEE1; --grey:#425563; --mint:#41B6E6; --ph:#768692;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Calibri,'Segoe UI',Arial,sans-serif;color:var(--navy);background:var(--bg)}
@@ -21,7 +21,7 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .spacer{flex:1}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid var(--sea);background:transparent;color:#fff;padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:12.5px}
-.btn:hover{background:#3E626C}
+.btn:hover{background:#0072CE}
 .btn:disabled{opacity:.35;cursor:default}
 .btn:disabled:hover{background:transparent}
 .btn.primary{background:var(--sea);border-color:var(--sea);font-weight:bold}
@@ -33,7 +33,7 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .pchip.on{background:var(--teal);color:#fff}
 .pchip .px{width:16px;height:16px;line-height:15px;text-align:center;border-radius:50%;font-size:11px;font-weight:normal;background:rgba(0,0,0,.10)}
 .pchip.on .px{background:rgba(255,255,255,.25)}
-.pchip .px:hover{background:#c0392b;color:#fff}
+.pchip .px:hover{background:#da291c;color:#fff}
 .paddbtn{border:1px dashed var(--teal);background:transparent;color:var(--teal);padding:5px 12px;border-radius:16px;cursor:pointer;font:inherit;font-size:12px}
 #nodebar{padding:8px 22px;background:#fff;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:44px}
 #nodebar .lbl{font-size:11px;letter-spacing:1.2px;font-weight:bold;color:var(--teal)}
@@ -42,7 +42,7 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .seg button.on{background:var(--teal);color:#fff;font-weight:bold}
 .tbtn{border:1px solid var(--line);background:#fff;color:var(--navy);padding:6px 11px;border-radius:8px;cursor:pointer;font:inherit;font-size:12px}
 .tbtn:hover{border-color:var(--teal);color:var(--teal)}
-.tbtn.danger:hover{border-color:#c0392b;color:#c0392b}
+.tbtn.danger:hover{border-color:#da291c;color:#da291c}
 #wrap{padding:18px 22px;overflow:auto}
 #board{position:relative;width:1120px;background:#fff;border:1px solid var(--line);border-radius:10px;margin:0 auto}
 #lines{position:absolute;inset:0;pointer-events:none}
@@ -54,7 +54,7 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .shape{position:absolute;inset:0;border-radius:8px;background:#fff;border:1.6px solid var(--teal)}
 .node.terminator .shape{border-radius:44px;background:var(--dark);border-color:var(--dark)}
 .node.terminator .ntext{color:#fff;font-weight:bold}
-.node.decision .shape{border:0;background:transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 84" preserveAspectRatio="none"><polygon points="75,2 148,42 75,82 2,42" fill="%23D6F0F2" stroke="%230A7E8C" stroke-width="2.4"/></svg>') center/100% 100% no-repeat}
+.node.decision .shape{border:0;background:transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 84" preserveAspectRatio="none"><polygon points="75,2 148,42 75,82 2,42" fill="%23D9E7F5" stroke="%23005EB8" stroke-width="2.4"/></svg>') center/100% 100% no-repeat}
 .node.decision .ntext{padding:10px 24px;font-size:10.5px}
 .node.wait .shape{border-style:dashed;background:var(--bg)}
 .node.wait .ntext{font-style:italic}
@@ -70,9 +70,10 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .dnode.idea{background:var(--bg)}
 .nadd,.ndel{position:absolute;width:20px;height:20px;border-radius:50%;border:0;color:#fff;font-size:13px;line-height:20px;text-align:center;cursor:pointer;padding:0;display:none}
 .nadd{background:var(--sea);right:-10px;top:calc(50% - 10px)}
-.ndel{background:#b8c4c8;right:-8px;top:-8px;font-size:11px}
-.ndel:hover{background:#c0392b}
-.node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel{display:block}
+.nsib{position:absolute;width:20px;height:20px;border-radius:50%;border:0;color:#fff;font-size:13px;line-height:20px;text-align:center;cursor:pointer;padding:0;display:none;background:var(--teal);left:calc(50% - 10px);bottom:-10px}
+.ndel{background:#768692;right:-8px;top:-8px;font-size:11px}
+.ndel:hover{background:#da291c}
+.node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel,.dnode:hover .nsib{display:block}
 #who{display:none;padding:10px 22px 0}
 .whoin{max-width:1120px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .whohead{font-size:10px;font-weight:bold;letter-spacing:1.6px;color:var(--teal)}
@@ -88,7 +89,7 @@ footer{padding:14px 22px;font-size:11px;color:var(--teal)}
 footer span{float:right;color:#9AA5AA}
 #fit{margin:0 auto}
 #board{transform-origin:0 0}
-@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel{display:block}}
+@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel,.dnode .nsib{display:block}}
 @media (max-width:760px){
   header{padding:10px 12px;gap:8px}
   .brand h1{font-size:17px}
@@ -107,10 +108,14 @@ footer span{float:right;color:#9AA5AA}
 }
 @media print{
   header,.hint,#nodebar,.legend,footer{display:none!important}
-  body{background:#fff}
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #wrap{padding:0;overflow:visible}
-  #board{border:0;margin:0}
+  #fit{width:auto!important;height:auto!important;margin:0}
+  #board{border:0;margin:0;transform:none!important;zoom:.92}
+  .nadd,.ndel,.nsib{display:none!important}
+  .node.sel .shape,.dnode.sel{box-shadow:none!important}
 }
+@page{size:landscape;margin:10mm}
 </style>
 </head>
 <body>
@@ -337,10 +342,10 @@ function renderProcess(board, svg, nodes){
   renderProcessBar();
 }
 function arrow(x1, y1, x2, y2){
-  return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#0A7E8C" stroke-width="2" marker-end="url(#arr)"/>';
+  return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#005EB8" stroke-width="2" marker-end="url(#arr)"/>';
 }
 function markerDefs(){
-  return '<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0A7E8C"/></marker></defs>';
+  return '<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#005EB8"/></marker></defs>';
 }
 function renderProcessBar(){
   const bar = $("nodebar"); bar.innerHTML = "";
@@ -399,7 +404,10 @@ function renderDriver(board, svg, nodes){
   });
   const yFor = s => DTOP + s * DSLOT;
   const mid = (a, b) => yFor((a + b) / 2);
-  function card(cls, col, y, txt, ph, oninput, adds, del){
+  function newIdea(){ return { id: nid(), text: "" }; }
+  function newSec(){ return { id: nid(), text: "", ideas: [newIdea()] }; }
+  function newPri(){ return { id: nid(), text: "", secondaries: [newSec()] }; }
+  function card(cls, col, y, txt, ph, oninput, adds, del, sib){
     const c = DCOL[col];
     const el = document.createElement("div");
     el.className = "dnode " + cls + (state.sel === oninput.id ? " sel" : "");
@@ -407,6 +415,8 @@ function renderDriver(board, svg, nodes){
     el.appendChild(editable("ntext", txt, ph, oninput.fn));
     if (adds){ const b = document.createElement("button"); b.className = "nadd"; b.textContent = "+"; b.title = adds.title;
       b.onclick = e => { e.stopPropagation(); beginChange(); adds.fn(); }; el.appendChild(b); }
+    if (sib){ const b = document.createElement("button"); b.className = "nsib"; b.textContent = "+"; b.title = sib.title;
+      b.onclick = e => { e.stopPropagation(); beginChange(); sib.fn(); }; el.appendChild(b); }
     if (del){ const b = document.createElement("button"); b.className = "ndel"; b.textContent = "\u00D7"; b.title = "Delete";
       b.onclick = e => { e.stopPropagation(); if (confirm("Delete this and everything under it?")){ beginChange(); del(); } }; el.appendChild(b); }
     nodes.appendChild(el);
@@ -415,32 +425,35 @@ function renderDriver(board, svg, nodes){
   let d = "";
   const aimY = dv.primaries.length ? mid(dv.primaries[0]._y0, dv.primaries[dv.primaries.length - 1]._y1) : yFor(0);
   const aimPos = card("aim", 0, aimY, dv.aim, "Your SMART aim\u2026", { fn: v => { dv.aim = v; } },
-    { title: "Add primary driver", fn: () => { dv.primaries.push({ id: nid(), text: "", secondaries: [{ id: nid(), text: "", ideas: [{ id: nid(), text: "" }] }] }); render(); } }, null);
+    { title: "Add a primary driver", fn: () => { dv.primaries.push(newPri()); render(); } }, null);
   dv.primaries.forEach(p => {
     const py = mid(p._y0, p._y1);
     const pp = card("primary", 1, py, p.text, "Primary driver\u2026", { fn: v => { p.text = v; } },
-      { title: "Add secondary driver", fn: () => { p.secondaries.push({ id: nid(), text: "", ideas: [{ id: nid(), text: "" }] }); render(); } },
-      () => { dv.primaries = dv.primaries.filter(x => x !== p); render(); });
+      { title: "Add a secondary driver to this one", fn: () => { p.secondaries.push(newSec()); render(); } },
+      () => { dv.primaries = dv.primaries.filter(x => x !== p); render(); },
+      { title: "Add another primary driver below this one", fn: () => { dv.primaries.splice(dv.primaries.indexOf(p) + 1, 0, newPri()); render(); } });
     d += elbow(aimPos, pp);
     p.secondaries.forEach(sc => {
       const sy = mid(sc._y0, sc._y1);
       const sp = card("secondary", 2, sy, sc.text, "Secondary driver\u2026", { fn: v => { sc.text = v; } },
-        { title: "Add change idea", fn: () => { sc.ideas.push({ id: nid(), text: "" }); render(); } },
-        () => { p.secondaries = p.secondaries.filter(x => x !== sc); render(); });
+        { title: "Add a change idea to this one", fn: () => { sc.ideas.push(newIdea()); render(); } },
+        () => { p.secondaries = p.secondaries.filter(x => x !== sc); render(); },
+        { title: "Add another secondary driver below this one", fn: () => { p.secondaries.splice(p.secondaries.indexOf(sc) + 1, 0, newSec()); render(); } });
       d += elbow(pp, sp);
       sc.ideas.forEach(idea => {
         const iy = yFor(idea._slot);
         const ip = card("idea", 3, iy, idea.text, "Change idea\u2026", { fn: v => { idea.text = v; } }, null,
-          () => { sc.ideas = sc.ideas.filter(x => x !== idea); render(); });
+          () => { sc.ideas = sc.ideas.filter(x => x !== idea); render(); },
+          { title: "Add another change idea below this one", fn: () => { sc.ideas.splice(sc.ideas.indexOf(idea) + 1, 0, newIdea()); render(); } });
         d += elbow(sp, ip);
       });
     });
   });
   svg.innerHTML = d;
-  $("hint").innerHTML = "<b>Driver diagram:</b> type in the boxes; tap or hover a box for <b>+</b> (add the next level) and <b>\u00D7</b> (delete). Read it left to right: to achieve the <b>aim</b>, these <b>drivers</b> must change \u2014 and these <b>change ideas</b> might do it. Pick ONE idea for cycle 1.";
+  $("hint").innerHTML = "<b>Driver diagram:</b> type in the boxes; tap or hover a box for its controls \u2014 <b>+ on the right</b> adds the next level along, <b>+ underneath</b> adds another box at the same level, <b>\u00D7</b> deletes. Read it left to right: to achieve the <b>aim</b>, these <b>drivers</b> must change \u2014 and these <b>change ideas</b> might do it. Pick ONE idea for cycle 1.";
   $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
   const bar = $("nodebar"); bar.innerHTML = "";
-  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "TAP OR HOVER ANY BOX FOR + / \u00D7 CONTROLS"; bar.appendChild(l);
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "+ RIGHT = NEXT LEVEL ALONG   \u00B7   + BELOW = ANOTHER AT THIS LEVEL   \u00B7   \u00D7 = DELETE"; bar.appendChild(l);
   renderWho();
 }
 const WHO = [
@@ -462,7 +475,7 @@ function renderWho(){
 }
 function elbow(a, b){
   const x1 = a.x + a.w, y1 = a.y + DH / 2, x2 = b.x, y2 = b.y + DH / 2, xm = (x1 + x2) / 2;
-  return '<path d="M' + x1 + ',' + y1 + ' L' + xm + ',' + y1 + ' L' + xm + ',' + y2 + ' L' + (x2 - 2) + ',' + y2 + '" fill="none" stroke="#0A7E8C" stroke-width="1.8"/>';
+  return '<path d="M' + x1 + ',' + y1 + ' L' + xm + ',' + y1 + ' L' + xm + ',' + y2 + ' L' + (x2 - 2) + ',' + y2 + '" fill="none" stroke="#005EB8" stroke-width="1.8"/>';
 }
 
 /* ---------- render root ---------- */
@@ -535,11 +548,19 @@ function exportPNG(){
   const prevFit = state.fit;
   state.fit = false; render();
   html2canvas($("board"), { backgroundColor: "#ffffff", scale: 2 }).then(cv => {
-    const a = document.createElement("a");
     const pgnm = state.pages[state.cur].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    a.download = (pgnm ? pgnm + "-" : "") + (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
-    a.href = cv.toDataURL("image/png"); a.click();
-  }).finally(() => { state.fit = prevFit; applyScale(); });
+    const name = (pgnm ? pgnm + "-" : "") + (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
+    cv.toBlob(blob => {
+      if (!blob){ alert("PNG export failed on this device \u2014 try Print / PDF instead."); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = name; a.rel = "noopener";
+      if ("download" in a){ document.body.appendChild(a); a.click(); a.remove(); }
+      else { window.open(url, "_blank"); }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }, "image/png");
+  }).catch(() => { alert("PNG export failed \u2014 try Print / PDF instead."); })
+    .finally(() => { state.fit = prevFit; applyScale(); });
 }
 
 /* ---------- boot ---------- */
