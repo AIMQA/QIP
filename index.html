@@ -27,6 +27,13 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .btn.primary{background:var(--sea);border-color:var(--sea);font-weight:bold}
 .hint{padding:9px 22px;font-size:12.5px;color:var(--grey);background:#fff;border-bottom:1px solid var(--line)}
 .hint b{color:var(--teal)}
+.wprob{background:var(--dark);color:#fff;border-radius:10px;padding:12px 16px;font-weight:bold;font-size:14px;position:relative}
+.wcard{background:#fff;border:1px solid var(--teal);border-radius:10px;padding:11px 16px;font-size:14px;color:var(--navy);position:relative;display:flex;align-items:center;gap:12px}
+.wcard .wlab{font-size:10px;font-weight:bold;letter-spacing:1.1px;color:var(--teal);white-space:nowrap}
+.wroot{background:var(--aqua);border:1px solid var(--teal);border-radius:10px;padding:11px 16px;font-size:14px;font-weight:bold;color:var(--navy);display:flex;align-items:center;gap:12px}
+.warrow{text-align:center;font-size:11px;font-style:italic;font-weight:bold;color:var(--teal);padding:5px 0}
+.wcard .ntext,.wprob .ntext{text-align:left}
+.waddw{display:block;margin:10px auto 0;border:1px dashed var(--teal);background:transparent;color:var(--teal);padding:7px 16px;border-radius:18px;cursor:pointer;font:inherit;font-size:13px}
 #pagebar{padding:8px 22px 0;background:var(--bg);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .plabel{font-size:10px;font-weight:bold;letter-spacing:1.2px;color:var(--grey)}
 .pchip{display:flex;align-items:center;gap:7px;border:1px solid var(--teal);background:#fff;color:var(--teal);padding:5px 8px 5px 13px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:bold}
@@ -73,7 +80,7 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .nsib{position:absolute;width:20px;height:20px;border-radius:50%;border:0;color:#fff;font-size:13px;line-height:20px;text-align:center;cursor:pointer;padding:0;display:none;background:var(--teal);left:calc(50% - 10px);bottom:-10px}
 .ndel{background:#768692;right:-8px;top:-8px;font-size:11px}
 .ndel:hover{background:#da291c}
-.node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel,.dnode:hover .nsib{display:block}
+.node:hover .nadd,.node:hover .ndel,.dnode:hover .nadd,.dnode:hover .ndel,.dnode:hover .nsib,.wcard:hover .ndel{display:block}
 #drvhelp{display:none;padding:10px 22px 0}
 .dgrid{display:flex;gap:8px;flex-wrap:wrap}
 .dcard{flex:1 1 190px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:10.5px;color:var(--navy)}
@@ -97,7 +104,7 @@ footer{padding:14px 22px;font-size:11px;color:var(--teal)}
 footer span{float:right;color:#9AA5AA}
 #fit{margin:0 auto}
 #board{transform-origin:0 0}
-@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel,.dnode .nsib{display:block}}
+@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel,.dnode .nsib,.wcard .ndel{display:block}}
 @media (max-width:760px){
   header{padding:10px 12px;gap:8px}
   .brand h1{font-size:17px}
@@ -135,6 +142,7 @@ footer span{float:right;color:#9AA5AA}
   </div>
   <div class="tabs">
     <button class="tab on" id="tabP" onclick="setMode('process')">Process Map</button>
+    <button class="tab" id="tabW" onclick="setMode('whys')">5 Whys</button>
     <button class="tab" id="tabD" onclick="setMode('driver')">Driver Diagram</button>
   </div>
   <div class="spacer"></div>
@@ -180,10 +188,15 @@ function blankProcess(){ return [
 function blankDriver(){ return { aim: "", primaries: [
   { id: nid(), text: "", secondaries: [ { id: nid(), text: "", ideas: [ { id: nid(), text: "" } ] } ] }
 ]};}
-state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver() }];
+function blankWhys(){ return { problem: "", whys: ["", "", ""] }; }
+state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver(), whys: blankWhys() }];
 state.cur = 0;
 Object.defineProperty(state, "process", { get(){ return state.pages[state.cur].process; }, set(v){ state.pages[state.cur].process = v; } });
 Object.defineProperty(state, "driver", { get(){ return state.pages[state.cur].driver; }, set(v){ state.pages[state.cur].driver = v; } });
+Object.defineProperty(state, "whys", {
+  get(){ const pg = state.pages[state.cur]; if (!pg.whys) pg.whys = blankWhys(); return pg.whys; },
+  set(v){ state.pages[state.cur].whys = v; }
+});
 function uniqueName(base){
   const names = state.pages.map(p => p.name);
   if (!names.includes(base)) return base;
@@ -210,7 +223,7 @@ function renderPages(){
 }
 function addPage(){
   beginChange();
-  state.pages.push({ id: nid(), name: uniqueName("Page " + (state.pages.length + 1)), process: blankProcess(), driver: blankDriver() });
+  state.pages.push({ id: nid(), name: uniqueName("Page " + (state.pages.length + 1)), process: blankProcess(), driver: blankDriver(), whys: blankWhys() });
   state.cur = state.pages.length - 1; state.sel = null; render();
 }
 function delPage(i){
@@ -274,14 +287,21 @@ function loadExample(){
           { id: nid(), text: "Team sees its own data", ideas: [
             { id: nid(), text: "Weekly run chart at board round" } ] } ] }
       ] };
-  state.pages.push({ id: nid(), name: uniqueName("Example \u2014 VTE"), process: procEx, driver: drvEx });
+  const whysEx = { problem: "VTE assessments get missed at clerking", whys: [
+    "Doctors skip the section when it\u2019s busy",
+    "Nothing prompts it while the chart is being written",
+    "The clerking proforma predates the VTE requirement"
+  ] };
+  state.pages.push({ id: nid(), name: uniqueName("Example \u2014 VTE"), process: procEx, driver: drvEx, whys: whysEx });
   state.cur = state.pages.length - 1;
   state.sel = null; render();
 }
 function clearMode(){
   if (!confirm("Clear the current diagram?")) return;
   beginChange();
-  if (state.mode === "process") state.process = blankProcess(); else state.driver = blankDriver();
+  if (state.mode === "process") state.process = blankProcess();
+  else if (state.mode === "whys") state.whys = blankWhys();
+  else state.driver = blankDriver();
   state.sel = null; render();
 }
 
@@ -498,6 +518,66 @@ function renderDrvHelp(){
     '</div>' +
     '<div class="dwarn"><b>Three things that catch people out:</b> &nbsp;1. If it names a poster, checklist or proforma, it\u2019s a change idea \u2014 not a driver. &nbsp;2. If nobody could disagree with it, it\u2019s too vague to be a driver. &nbsp;3. More than five primary drivers usually means some are really secondary ones.</div></div>';
 }
+function renderWhys(board, svg, nodes){
+  const w = state.whys;
+  const X = 260, W = 600;
+  let y = 26;
+  board.style.height = (y + 120 + w.whys.length * 108 + 130) + "px";
+  const place = (el, h) => { el.style.cssText = "position:absolute;left:" + X + "px;top:" + y + "px;width:" + W + "px;box-sizing:border-box"; nodes.appendChild(el); y += h; };
+
+  const head = document.createElement("div");
+  head.className = "colhead"; head.style.left = X + "px"; head.textContent = "THE PROBLEM";
+  head.style.top = "6px"; nodes.appendChild(head);
+
+  const pb = document.createElement("div"); pb.className = "wprob";
+  pb.appendChild(editable("ntext", w.problem, "What\u2019s going wrong?", v => { w.problem = v; }));
+  place(pb, 70);
+
+  w.whys.forEach((t, i) => {
+    const ar = document.createElement("div"); ar.className = "warrow"; ar.textContent = "\u2193  why?";
+    ar.style.cssText = "position:absolute;left:" + X + "px;top:" + y + "px;width:" + W + "px";
+    nodes.appendChild(ar); y += 26;
+
+    const c = document.createElement("div"); c.className = "wcard" + (i === w.whys.length - 1 ? " last" : "");
+    const lab = document.createElement("span"); lab.className = "wlab"; lab.textContent = "WHY " + (i + 1); c.appendChild(lab);
+    const ed = editable("ntext", t, "Because\u2026", v => { w.whys[i] = v; });
+    ed.style.flex = "1"; c.appendChild(ed);
+    if (w.whys.length > 1){
+      const d = document.createElement("button"); d.className = "ndel"; d.textContent = "\u00D7"; d.title = "Delete this why";
+      d.onclick = e => { e.stopPropagation(); beginChange(); w.whys.splice(i, 1); render(); };
+      c.appendChild(d);
+    }
+    place(c, 62);
+  });
+
+  const ar2 = document.createElement("div"); ar2.className = "warrow"; ar2.textContent = "\u2193  so\u2026";
+  ar2.style.cssText = "position:absolute;left:" + X + "px;top:" + y + "px;width:" + W + "px";
+  nodes.appendChild(ar2); y += 26;
+
+  const root = document.createElement("div"); root.className = "wroot";
+  const rl = document.createElement("span"); rl.className = "wlab"; rl.textContent = "ROOT CAUSE"; root.appendChild(rl);
+  const rt = document.createElement("span");
+  const last = (w.whys[w.whys.length - 1] || "").trim();
+  rt.textContent = last ? last : "\u2014 your last \u2018why\u2019 appears here";
+  rt.style.color = last ? "" : "var(--ph)";
+  root.appendChild(rt);
+  place(root, 66);
+
+  if (w.whys.length < 7){
+    const add = document.createElement("button"); add.className = "waddw"; add.textContent = "+ Add another why";
+    add.style.cssText += ";position:absolute;left:" + X + "px;top:" + (y + 6) + "px;width:" + W + "px";
+    add.onclick = () => { beginChange(); w.whys.push(""); render(); };
+    nodes.appendChild(add);
+  }
+
+  svg.innerHTML = "";
+  $("who").style.display = "none";
+  $("drvhelp").style.display = "none";
+  $("hint").innerHTML = "<b>5 Whys:</b> name the problem, then keep asking <b>why</b> until you reach something you can redesign \u2014 a process, a form, a step. If your last \u2018why\u2019 names a <i>person</i>, ask why once more. The root cause becomes a secondary driver on your driver diagram.";
+  $("legend").innerHTML = "<span><i>Tip</i>&nbsp; three to five whys is typical \u2014 ten minutes at the whiteboard with the team beats an hour alone.</span>";
+  const bar = $("nodebar"); bar.innerHTML = "";
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "CLICK A BOX AND TYPE   \u00B7   \u00D7 = DELETE A WHY"; bar.appendChild(l);
+}
 const WHO = [
   ["Effective", "is the right, evidence-based care happening?"],
   ["Safe", "could harm or error be designed out?"],
@@ -524,10 +604,13 @@ function elbow(a, b){
 function render(){
   $("tabP").className = "tab" + (state.mode === "process" ? " on" : "");
   $("tabD").className = "tab" + (state.mode === "driver" ? " on" : "");
+  $("tabW").className = "tab" + (state.mode === "whys" ? " on" : "");
   const board = $("board"), svg = $("lines"), nodes = $("nodes");
   nodes.innerHTML = "";
   svg.innerHTML = markerDefs();
-  if (state.mode === "process") renderProcess(board, svg, nodes); else renderDriver(board, svg, nodes);
+  if (state.mode === "process") renderProcess(board, svg, nodes);
+  else if (state.mode === "whys") renderWhys(board, svg, nodes);
+  else renderDriver(board, svg, nodes);
   svg.setAttribute("width", 1120); svg.setAttribute("height", parseInt(board.style.height, 10) || 400);
   renderPages();
   applyScale();
@@ -623,7 +706,8 @@ function exportPNG(){
   state.fit = false; render();
   html2canvas($("board"), { backgroundColor: "#ffffff", scale: 2 }).then(cv => {
     const pgnm = state.pages[state.cur].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    const name = (pgnm ? pgnm + "-" : "") + (state.mode === "process" ? "process-map" : "driver-diagram") + ".png";
+    const mname = state.mode === "process" ? "process-map" : (state.mode === "whys" ? "five-whys" : "driver-diagram");
+    const name = (pgnm ? pgnm + "-" : "") + mname + ".png";
     const out = toLandscape(cv);
     out.toBlob(blob => {
       if (!blob){ alert("PNG export failed on this device \u2014 try Print / PDF instead."); return; }
@@ -640,7 +724,7 @@ function exportPNG(){
 
 /* ---------- boot ---------- */
 const q = new URLSearchParams(location.search);
-if (q.get("mode")) state.mode = q.get("mode") === "driver" ? "driver" : "process";
+if (q.get("mode")){ const m = q.get("mode"); state.mode = (m === "driver" || m === "whys") ? m : "process"; }
 render();
 if (q.get("example")) loadExample();
 </script>
