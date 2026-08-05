@@ -50,6 +50,8 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .tbtn{border:1px solid var(--line);background:#fff;color:var(--navy);padding:6px 11px;border-radius:8px;cursor:pointer;font:inherit;font-size:12px}
 .tbtn:hover{border-color:var(--teal);color:var(--teal)}
 .tbtn.danger:hover{border-color:#da291c;color:#da291c}
+.tbtn.red{background:#da291c;border-color:#da291c;color:#fff;font-weight:bold}
+.tbtn.red:hover{background:#b81f14;border-color:#b81f14;color:#fff}
 #wrap{padding:18px 22px;overflow:auto}
 #board{position:relative;width:1120px;background:#fff;border:1px solid var(--line);border-radius:10px;margin:0 auto}
 #lines{position:absolute;inset:0;pointer-events:none}
@@ -485,7 +487,7 @@ function renderDriver(board, svg, nodes){
   $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
   const bar = $("nodebar"); bar.innerHTML = "";
   const l = document.createElement("span"); l.className = "lbl"; l.textContent = "+ RIGHT = NEXT LEVEL ALONG   \u00B7   + BELOW = ANOTHER AT THIS LEVEL   \u00B7   \u00D7 = DELETE"; bar.appendChild(l);
-  const t = document.createElement("button"); t.className = "tbtn";
+  const t = document.createElement("button"); t.className = "tbtn" + (state.help ? " red" : "");
   t.textContent = state.help ? "Hide guidance" : "Show guidance";
   t.onclick = () => { state.help = !state.help; render(); };
   bar.appendChild(t);
@@ -589,6 +591,7 @@ const WHO = [
 ];
 function renderWho(){
   const w = $("who");
+  if (!state.help){ w.style.display = "none"; return; }
   w.style.display = "block";
   w.innerHTML = '<div class="whoin"><div class="whohead">WHO QUALITY LENS \u2014 SEVEN MARKS OF A QUALITY HEALTH SERVICE' +
     '<a href="https://www.who.int/health-topics/quality-of-care" target="_blank" rel="noopener">Source: WHO \u2014 Quality of care</a></div>' +
