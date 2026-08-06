@@ -84,6 +84,11 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .node.wait .ntext{font-style:italic}
 .nobranch{position:absolute;left:-8px;right:-8px;top:100%;margin-top:3px;font-size:10.5px;font-style:italic;color:var(--grey);text-align:center;outline:none}
 .nobranch:empty:before{content:'if no: click to note…';color:var(--grey)}
+.branchhead{position:absolute;font-size:10px;font-weight:bold;letter-spacing:1.2px;color:var(--teal)}
+.branchlabel{position:absolute;display:flex;align-items:baseline;gap:5px;font-size:11px;color:var(--navy)}
+.branchlabel b{color:var(--teal);white-space:nowrap;font-size:10px;letter-spacing:.5px}
+.branchnote{outline:none;border-bottom:1px dashed var(--line);min-width:140px;padding:1px 2px}
+.branchnote:empty:before{content:attr(data-ph);color:var(--grey);font-style:italic}
 .dnode{position:absolute;background:var(--bg);border:1.4px solid var(--line);border-radius:8px;font-size:13px;line-height:1.3}
 .dnode .ntext{align-items:center;text-align:left;padding:7px 10px}
 .dnode.aim{background:var(--dark);border-color:var(--dark)}
@@ -322,7 +327,10 @@ function loadExample(){
       { id: nid(), type: "terminator", text: "Patient arrives on AMU" },
       { id: nid(), type: "step", text: "Clerked by admitting doctor" },
       { id: nid(), type: "step", text: "Drug chart written" },
-      { id: nid(), type: "decision", text: "VTE section completed?", no: "chart flagged at board round" },
+      { id: nid(), type: "decision", text: "VTE section completed?", no: "chart flagged at board round", branch: [
+        { id: nid(), type: "step", text: "Nurse flags it to the prescriber at board round" },
+        { id: nid(), type: "terminator", text: "Addressed same day" }
+      ] },
       { id: nid(), type: "step", text: "Pharmacist screens chart" },
       { id: nid(), type: "wait", text: "Wait for drug round" },
       { id: nid(), type: "step", text: "First doses given" },
@@ -395,7 +403,12 @@ function pPos(i){
 function renderProcess(board, svg, nodes){
   const list = state.process;
   const rows = Math.max(1, Math.ceil(list.length / COLS));
-  board.style.height = (rows * (PH + GY) - GY + PAD * 2) + "px";
+  const mainH = rows * (PH + GY) - GY + PAD * 2;
+  const branches = [];
+  list.forEach((n, i) => { if (n.type === "decision" && n.branch && n.branch.length) branches.push({ decision: n, idx: i }); });
+  const BROWH = PH + 42, BGAP = 30;
+  const branchH = branches.length ? (24 + branches.length * (BROWH + BGAP)) : 0;
+  board.style.height = (mainH + branchH) + "px";
   list.forEach((n, i) => {
     const p = pPos(i);
     const el = document.createElement("div");
@@ -403,7 +416,7 @@ function renderProcess(board, svg, nodes){
     el.style.cssText = "left:" + p.x + "px;top:" + p.y + "px;width:" + PW + "px;height:" + PH + "px";
     el.innerHTML = '<div class="shape"></div>';
     el.appendChild(editable("ntext", n.text, "click to type\u2026", v => { n.text = v; }));
-    if (n.type === "decision") el.appendChild(editable("nobranch", n.no, "", v => { n.no = v; }));
+    if (n.type === "decision" && !(n.branch && n.branch.length)) el.appendChild(editable("nobranch", n.no, "", v => { n.no = v; }));
     el.addEventListener("mousedown", e => { if (state.sel !== n.id){ e.preventDefault(); state.sel = n.id; render(); } });
     nodes.appendChild(el);
     if (state.sel === n.id) focusEnd(el.querySelector(".ntext"));
@@ -421,11 +434,53 @@ function renderProcess(board, svg, nodes){
       d += arrow(x, a.y + PH, x, b.y - 3, svg);
     }
   }
+  // branch spurs \u2014 one row per branching decision, below the main grid
+  if (branches.length){
+    const bh = document.createElement("div"); bh.className = "branchhead";
+    bh.style.cssText = "left:" + PAD + "px;top:" + (mainH - GY / 2 + 2) + "px";
+    bh.textContent = "\u201CNO\u201D PATHS";
+    nodes.appendChild(bh);
+  }
+  branches.forEach((br, bi) => {
+    const rowY = mainH + 24 + bi * (BROWH + BGAP);
+    const labY = rowY, boxY = rowY + 36;
+    const lw = document.createElement("div"); lw.className = "branchlabel";
+    lw.style.cssText = "left:" + PAD + "px;top:" + labY + "px;width:" + (PW * 3) + "px";
+    const tag = document.createElement("b"); tag.textContent = "IF NO \u2014";
+    lw.appendChild(tag);
+    lw.appendChild(editable("branchnote", br.decision.no, "click to note what happens\u2026", v => { br.decision.no = v; }));
+    nodes.appendChild(lw);
+    let bx = PAD;
+    br.decision.branch.forEach((bn, k) => {
+      const el = document.createElement("div");
+      el.className = "node " + bn.type + (state.sel === bn.id ? " sel" : "");
+      el.style.cssText = "left:" + bx + "px;top:" + boxY + "px;width:" + PW + "px;height:" + PH + "px";
+      el.innerHTML = '<div class="shape"></div>';
+      el.appendChild(editable("ntext", bn.text, "click to type\u2026", v => { bn.text = v; }));
+      el.addEventListener("mousedown", e => { if (state.sel !== bn.id){ e.preventDefault(); state.sel = bn.id; render(); } });
+      nodes.appendChild(el);
+      if (state.sel === bn.id) focusEnd(el.querySelector(".ntext"));
+      if (k < br.decision.branch.length - 1) d += arrow(bx + PW, boxY + PH / 2, bx + PW + GX - 3, boxY + PH / 2, svg);
+      bx += PW + GX;
+    });
+    // route via a right-hand gutter so the dashed line never crosses main-grid boxes, whatever row the decision sits in
+    const dPos = pPos(br.idx);
+    const cx = dPos.x + PW / 2, startX = PAD + PW / 2;
+    const gutterX = PAD + COLS * (PW + GX) - GX + 40;
+    const dropY = dPos.y + PH + 14, runY = boxY - 12;
+    d += '<path d="M' + cx + ',' + (dPos.y + PH) +
+      ' L' + cx + ',' + dropY +
+      ' L' + gutterX + ',' + dropY +
+      ' L' + gutterX + ',' + runY +
+      ' L' + startX + ',' + runY +
+      ' L' + startX + ',' + (boxY - 3) +
+      '" fill="none" stroke="#005EB8" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>';
+  });
   svg.innerHTML = markerDefs() + d;
   $("who").style.display = "none";
   $("drvhelp").style.display = "none";
-  $("hint").innerHTML = "<b>Process map:</b> click a box to select it and type straight in. Use the bar below to change its shape, add the next step, or reorder. Map what <i>actually</i> happens \u2014 walk the route with the people who do the work.";
-  $("legend").innerHTML = "<span><i>Pill</i> start / end</span><span><i>Box</i> step</span><span><i>Diamond</i> decision (note the \u2018no\u2019 route underneath)</span><span><i>Dashed</i> wait / delay</span>";
+  $("hint").innerHTML = "<b>Process map:</b> click a box to select it and type straight in. Use the bar below to change its shape, add the next step, or reorder. On a decision, use <b>+ Add \u201CNo\u201D step</b> to map that path too \u2014 not just note it. Map what <i>actually</i> happens \u2014 walk the route with the people who do the work.";
+  $("legend").innerHTML = "<span><i>Pill</i> start / end</span><span><i>Box</i> step</span><span><i>Diamond</i> decision \u2014 can branch below</span><span><i>Dashed</i> wait / delay</span>";
   renderProcessBar();
 }
 function arrow(x1, y1, x2, y2){
@@ -436,27 +491,48 @@ function markerDefs(){
 }
 function renderProcessBar(){
   const bar = $("nodebar"); bar.innerHTML = "";
-  const i = state.process.findIndex(n => n.id === state.sel);
   const mk = (txt, fn, cls) => { const b = document.createElement("button"); b.className = cls || "tbtn"; b.textContent = txt; b.onclick = () => { beginChange(); fn(); }; bar.appendChild(b); };
-  if (i < 0){
-    const l = document.createElement("span"); l.className = "lbl"; l.textContent = "NOTHING SELECTED \u2014"; bar.appendChild(l);
-    mk("+ Add step at end", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.push(nn); state.sel = nn.id; render(); });
+  const i = state.process.findIndex(n => n.id === state.sel);
+  if (i >= 0){
+    const n = state.process[i];
+    const l = document.createElement("span"); l.className = "lbl"; l.textContent = "SELECTED SHAPE:"; bar.appendChild(l);
+    const seg = document.createElement("div"); seg.className = "seg";
+    [["terminator", "Start / End"], ["step", "Step"], ["decision", "Decision"], ["wait", "Wait"]].forEach(t => {
+      const b = document.createElement("button"); b.textContent = t[1];
+      if (n.type === t[0]) b.className = "on";
+      b.onclick = () => { beginChange(); n.type = t[0]; render(); };
+      seg.appendChild(b);
+    });
+    bar.appendChild(seg);
+    mk("+ Add step after", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.splice(i + 1, 0, nn); state.sel = nn.id; render(); });
+    if (n.type === "decision") mk("+ Add \u201CNo\u201D step", () => { if (!n.branch) n.branch = []; const nn = { id: nid(), type: "step", text: "" }; n.branch.push(nn); state.sel = nn.id; render(); });
+    mk("\u25C0 Move earlier", () => { if (i > 0){ const t = state.process[i - 1]; state.process[i - 1] = n; state.process[i] = t; render(); } });
+    mk("Move later \u25B6", () => { if (i < state.process.length - 1){ const t = state.process[i + 1]; state.process[i + 1] = n; state.process[i] = t; render(); } });
+    mk("Delete", () => { state.process.splice(i, 1); state.sel = null; render(); }, "tbtn danger");
     return;
   }
-  const n = state.process[i];
-  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "SELECTED SHAPE:"; bar.appendChild(l);
-  const seg = document.createElement("div"); seg.className = "seg";
-  [["terminator", "Start / End"], ["step", "Step"], ["decision", "Decision"], ["wait", "Wait"]].forEach(t => {
-    const b = document.createElement("button"); b.textContent = t[1];
-    if (n.type === t[0]) b.className = "on";
-    b.onclick = () => { beginChange(); n.type = t[0]; render(); };
-    seg.appendChild(b);
-  });
-  bar.appendChild(seg);
-  mk("+ Add step after", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.splice(i + 1, 0, nn); state.sel = nn.id; render(); });
-  mk("\u25C0 Move earlier", () => { if (i > 0){ const t = state.process[i - 1]; state.process[i - 1] = n; state.process[i] = t; render(); } });
-  mk("Move later \u25B6", () => { if (i < state.process.length - 1){ const t = state.process[i + 1]; state.process[i + 1] = n; state.process[i] = t; render(); } });
-  mk("Delete", () => { state.process.splice(i, 1); state.sel = null; render(); }, "tbtn danger");
+  for (const dn of state.process){
+    if (dn.type !== "decision" || !dn.branch) continue;
+    const bi = dn.branch.findIndex(bn => bn.id === state.sel);
+    if (bi < 0) continue;
+    const bn = dn.branch[bi];
+    const l = document.createElement("span"); l.className = "lbl"; l.textContent = "\u201CNO\u201D PATH SHAPE:"; bar.appendChild(l);
+    const seg = document.createElement("div"); seg.className = "seg";
+    [["step", "Step"], ["wait", "Wait"], ["terminator", "End here"]].forEach(t => {
+      const b = document.createElement("button"); b.textContent = t[1];
+      if (bn.type === t[0]) b.className = "on";
+      b.onclick = () => { beginChange(); bn.type = t[0]; render(); };
+      seg.appendChild(b);
+    });
+    bar.appendChild(seg);
+    mk("+ Add step after", () => { const nn = { id: nid(), type: "step", text: "" }; dn.branch.splice(bi + 1, 0, nn); state.sel = nn.id; render(); });
+    mk("\u25C0 Move earlier", () => { if (bi > 0){ const t = dn.branch[bi - 1]; dn.branch[bi - 1] = bn; dn.branch[bi] = t; render(); } });
+    mk("Move later \u25B6", () => { if (bi < dn.branch.length - 1){ const t = dn.branch[bi + 1]; dn.branch[bi + 1] = bn; dn.branch[bi] = t; render(); } });
+    mk("Remove from branch", () => { dn.branch.splice(bi, 1); state.sel = null; render(); }, "tbtn danger");
+    return;
+  }
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "NOTHING SELECTED \u2014"; bar.appendChild(l);
+  mk("+ Add step at end", () => { const nn = { id: nid(), type: "step", text: "" }; state.process.push(nn); state.sel = nn.id; render(); });
 }
 
 /* ---------- DRIVER DIAGRAM ---------- */
