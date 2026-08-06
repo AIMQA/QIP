@@ -34,6 +34,16 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .warrow{text-align:center;font-size:11px;font-style:italic;font-weight:bold;color:var(--teal);padding:5px 0}
 .wcard .ntext,.wprob .ntext{text-align:left}
 .waddw{display:block;margin:10px auto 0;border:1px dashed var(--teal);background:transparent;color:var(--teal);padding:7px 16px;border-radius:18px;cursor:pointer;font:inherit;font-size:13px}
+#livebar{display:none;align-items:center;gap:12px;padding:7px 22px;background:#E6F3EA;border-bottom:1px solid #A8D5B5;font-size:12px;color:var(--navy);flex-wrap:wrap}
+#livebar.on{display:flex}
+#livebar .dot{width:9px;height:9px;border-radius:50%;background:#009639;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+#livebar b{color:#00622A}
+#livebar .code{font-family:Consolas,monospace;font-weight:bold;letter-spacing:1px;background:#fff;border:1px solid #A8D5B5;border-radius:6px;padding:2px 8px}
+#livebar button{border:1px solid #A8D5B5;background:#fff;color:var(--navy);padding:4px 10px;border-radius:7px;cursor:pointer;font:inherit;font-size:11.5px}
+#livebar button:hover{border-color:#00622A;color:#00622A}
+@media print{#livebar{display:none!important}}
+@media (max-width:760px){#livebar{padding:7px 12px;font-size:11.5px}}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:11px 20px;border-radius:22px;font-size:13px;font-weight:bold;box-shadow:0 6px 20px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .25s;z-index:60;max-width:88vw;text-align:center}
 #toast.on{opacity:1}
 @media print{#toast{display:none!important}}
@@ -54,6 +64,8 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .tbtn:hover{border-color:var(--teal);color:var(--teal)}
 .tbtn.danger:hover{border-color:#da291c;color:#da291c}
 .tbtn.red{background:#da291c;border-color:#da291c;color:#fff;font-weight:bold}
+.btn.synced{background:#009639;border-color:#009639;color:#fff;font-weight:bold}
+.btn.synced:hover{background:#00762c;border-color:#00762c}
 .tbtn.red:hover{background:#b81f14;border-color:#b81f14;color:#fff}
 #wrap{padding:18px 22px;overflow:auto}
 #board{position:relative;width:1120px;background:#fff;border:1px solid var(--line);border-radius:10px;margin:0 auto}
@@ -92,6 +104,9 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .dcard b{display:block;color:var(--teal);font-size:11px;margin-bottom:2px}
 .dcard .tst{display:block;color:var(--teal);font-style:italic;margin-top:4px}
 .dcard .exm{display:block;color:var(--grey);margin-top:3px}
+.dcard .smartlbl{display:block;color:var(--teal);font-size:8.5px;font-weight:bold;letter-spacing:1.1px;margin-top:5px}
+.dcard .smartline{display:block;color:var(--navy);font-size:9.3px;margin-top:1.5px}
+.dcard .smartline b{display:inline;color:var(--dark);font-size:inherit;margin:0}
 .dwarn{margin-top:8px;background:var(--aqua);border-radius:8px;padding:7px 10px;font-size:10.5px;color:var(--navy)}
 .dwarn b{color:var(--teal)}
 #who{display:none;padding:10px 22px 0}
@@ -99,10 +114,13 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .whohead{font-size:10px;font-weight:bold;letter-spacing:1.6px;color:var(--teal)}
 .whohead a{color:var(--grey);font-weight:normal;letter-spacing:0;float:right;font-size:10.5px}
 .wholine{font-size:11px;color:var(--navy);margin:4px 0 8px}
+.howlist{margin:0;padding:0 0 0 18px;columns:2;column-gap:22px}
+.howlist li{font-size:10.5px;color:var(--navy);margin-bottom:6px;break-inside:avoid}
+.howlist li b{color:var(--teal)}
 .whogrid{display:flex;gap:8px;flex-wrap:wrap}
 .whocard{flex:1 1 140px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:10.5px;color:var(--grey)}
 .whocard b{display:block;color:var(--teal);font-size:11px;margin-bottom:1px}
-@media print{#who{display:none!important}#drvhelp{display:none!important}#pagebar{display:none!important}}
+@media print{#who{display:none!important}#drvhelp{display:none!important}#howto{display:none!important}#pagebar{display:none!important}}
 .legend{max-width:1120px;margin:8px auto 0;padding:0 4px;font-size:10.5px;color:var(--grey);display:flex;gap:18px;flex-wrap:wrap}
 .legend i{font-style:normal;color:var(--teal);font-weight:bold}
 footer{padding:14px 22px;font-size:11px;color:var(--teal)}
@@ -122,6 +140,8 @@ footer span{float:right;color:#9AA5AA}
   .tbtn,.seg button{padding:6px 8px;font-size:11.5px}
   #who{padding:8px 8px 0}
   #drvhelp{padding:8px 8px 0}
+  #howto{padding:8px 8px 0}
+  .howlist{columns:1}
   #wrap{padding:10px 8px}
   .legend{font-size:10px;gap:10px}
   footer{padding:12px 12px 18px;font-size:10px}
@@ -159,6 +179,8 @@ footer span{float:right;color:#9AA5AA}
     <button class="btn" onclick="openFile()">Open…</button>
     <button class="btn" onclick="saveFile()">Save file</button>
     <button class="btn" onclick="shareLink()">Share link</button>
+    <button class="btn" id="collabbtn" onclick="toggleCollab()">Collaborate</button>
+    <button class="btn" id="syncbtn" onclick="signInToSync()">Sign in to sync</button>
     <button class="btn" id="fitbtn" onclick="toggleFit()" style="display:none">Zoom 100%</button>
     <button class="btn" onclick="doPrint()">Print / PDF</button>
     <button class="btn primary" onclick="exportPNG()">Download PNG</button>
@@ -167,7 +189,9 @@ footer span{float:right;color:#9AA5AA}
 </header>
 
 <div id="toast"></div>
+<div id="livebar"></div>
 <div id="pagebar"></div>
+<div id="howto"></div>
 <div class="hint" id="hint"></div>
 <div id="nodebar"></div>
 <div id="drvhelp"></div>
@@ -254,6 +278,31 @@ const undoStack = [], redoStack = [];
 function snap(){ return JSON.stringify({ pages: state.pages, cur: state.cur }); }
 function pushRaw(s){ if (undoStack[undoStack.length - 1] !== s){ undoStack.push(s); if (undoStack.length > 100) undoStack.shift(); } }
 function beginChange(){ pushRaw(snap()); redoStack.length = 0; updateHistBtns(); }
+function afterChange(){ if (typeof pushLive === "function") pushLive(); if (typeof pushCloudLibrary === "function") pushCloudLibrary(false); saveLocal(); }
+
+/* ---------- local persistence (per browser) \u2014 keeps named projects separate and durable ---------- */
+const LS_KEY = "aimqip.v1";
+let lsWarned = false;
+function saveLocal(){
+  if (collab.on) return;   // a live room's pages are not your personal saved set
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ pages: state.pages, cur: state.cur }));
+  } catch (e) {
+    if (!lsWarned){ lsWarned = true; showToast("Couldn\u2019t save locally (browser storage full) \u2014 use Save file to keep a copy", 5000); }
+  }
+}
+function loadLocal(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const j = JSON.parse(raw);
+    if (!Array.isArray(j.pages) || !j.pages.length) return false;
+    state.pages = j.pages;
+    state.cur = Math.min(j.cur || 0, j.pages.length - 1);
+    return true;
+  } catch (e){ return false; }
+}
+function blankPageSet(){ state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver(), whys: blankWhys() }]; state.cur = 0; }
 function applySnap(s){ const j = JSON.parse(s); state.pages = j.pages; state.cur = Math.min(j.cur || 0, j.pages.length - 1); state.sel = null; render(); }
 function doUndo(){ if (!undoStack.length) return; redoStack.push(snap()); applySnap(undoStack.pop()); updateHistBtns(); }
 function doRedo(){ if (!redoStack.length) return; undoStack.push(snap()); applySnap(redoStack.pop()); updateHistBtns(); }
@@ -328,7 +377,7 @@ function editable(cls, txt, ph, oninput){
   d.setAttribute("data-ph", ph); d.innerText = txt || "";
   let base = null;
   d.addEventListener("focus", () => { base = snap(); });
-  d.addEventListener("blur", () => { base = null; });
+  d.addEventListener("blur", () => { base = null; afterChange(); });
   d.addEventListener("input", () => {
     if (base !== null){ pushRaw(base); redoStack.length = 0; base = null; updateHistBtns(); }
     oninput(d.innerText);
@@ -492,16 +541,12 @@ function renderDriver(board, svg, nodes){
   $("legend").innerHTML = "<span><i>Tip</i>&nbsp; a 15-minute whiteboard version with your team comes first \u2014 this makes it presentable.</span>";
   const bar = $("nodebar"); bar.innerHTML = "";
   const l = document.createElement("span"); l.className = "lbl"; l.textContent = "+ RIGHT = NEXT LEVEL ALONG   \u00B7   + BELOW = ANOTHER AT THIS LEVEL   \u00B7   \u00D7 = DELETE"; bar.appendChild(l);
-  const t = document.createElement("button"); t.className = "tbtn" + (state.help ? " red" : "");
-  t.textContent = state.help ? "Hide guidance" : "Show guidance";
-  t.onclick = () => { state.help = !state.help; render(); };
-  bar.appendChild(t);
   renderDrvHelp();
   renderWho();
 }
 const DRV = [
   ["Your aim", "What you\u2019re trying to achieve \u2014 with a number and a date.",
-   "Could someone else tell whether you hit it?",
+   [["S", "what, for whom?"], ["M", "a number + a method?"], ["A", "doable this rotation?"], ["R", "ties to your change idea?"], ["T", "a check-by date?"]],
    "\u201CIncrease completed VTE assessments on AMU from 60% to 90% by Mar 2027.\u201D"],
   ["Primary drivers", "The 3\u20135 big things that must be true for the aim to happen. Write them as conditions, not actions \u2014 the headings of your theory.",
    "If all of these were true, would we hit the aim?",
@@ -519,9 +564,12 @@ function renderDrvHelp(){
   w.style.display = "block";
   w.innerHTML = '<div class="whoin"><div class="whohead">WHAT GOES IN EACH COLUMN</div>' +
     '<div class="wholine">Read your diagram as one sentence: <b>we\u2019ll achieve the aim because these primary drivers change \u2014 and each one will change because of these secondary drivers, which we\u2019ll test with these change ideas.</b></div>' +
-    '<div class="dgrid">' + DRV.map(d =>
-      '<div class="dcard"><b>' + d[0] + '</b>' + d[1] +
-      '<span class="tst">Test: ' + d[2] + '</span><span class="exm">e.g. ' + d[3] + '</span></div>').join('') +
+    '<div class="dgrid">' + DRV.map(d => {
+      const test = Array.isArray(d[2])
+        ? '<span class="smartlbl">IS IT SMART?</span>' + d[2].map(sm => '<span class="smartline"><b>' + sm[0] + '</b> \u2014 ' + sm[1] + '</span>').join('')
+        : '<span class="tst">Test: ' + d[2] + '</span>';
+      return '<div class="dcard"><b>' + d[0] + '</b>' + d[1] + test + '<span class="exm">e.g. ' + d[3] + '</span></div>';
+    }).join('') +
     '</div>' +
     '<div class="dwarn"><b>Three things that catch people out:</b> &nbsp;1. If it names a poster, checklist or proforma, it\u2019s a change idea \u2014 not a driver. &nbsp;2. If nobody could disagree with it, it\u2019s too vague to be a driver. &nbsp;3. More than five primary drivers usually means some are really secondary ones.</div></div>';
 }
@@ -620,8 +668,38 @@ function render(){
   else if (state.mode === "whys") renderWhys(board, svg, nodes);
   else renderDriver(board, svg, nodes);
   svg.setAttribute("width", 1120); svg.setAttribute("height", parseInt(board.style.height, 10) || 400);
+  appendGuidanceToggle($("nodebar"));
   renderPages();
+  renderHowTo();
   applyScale();
+  afterChange();
+}
+function appendGuidanceToggle(bar){
+  const t = document.createElement("button"); t.id = "guidebtn"; t.className = "tbtn" + (state.help ? " red" : "");
+  t.textContent = state.help ? "Hide guidance" : "Show guidance";
+  t.onclick = () => { state.help = !state.help; render(); };
+  bar.appendChild(t);
+}
+const HOWTO = [
+  ["Three tabs", "Process Map (what happens) \u2192 5 Whys (why it happens) \u2192 Driver Diagram (what to change). Work left to right."],
+  ["Pages = projects", "Each page is a separate, named project with its own diagrams. Rename this one to your QIP \u2014 doing so also dismisses this guide."],
+  ["+ New page", "Start another project, or a fresh page for cycle 2, without losing this one."],
+  ["It saves itself", "Everything autosaves in this browser as you go \u2014 close the tab and it\u2019s still here next time."],
+  ["Save file / Open\u2026 / Sign in to sync", "Download a portable copy, open one elsewhere, or sign in to have your named projects follow you automatically."],
+  ["Share link / Collaborate", "Send a snapshot to a colleague, or start a live room and edit the same page together in real time."],
+  ["Download PNG / Print", "Exports as a clean landscape image or a one-page PDF \u2014 ready for your slides or workbook."],
+  ["Undo / Redo, top left", "Every change is one click to reverse, including Load example and Clear."]
+];
+function renderHowTo(){
+  const el = $("howto");
+  const pg = state.pages[state.cur];
+  if (!state.help || !pg || pg.name !== "Page 1"){ el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.innerHTML = '<div class="whoin"><div class="whohead">HOW TO USE THIS TOOL' +
+    '<a href="#" id="howtoRename">Rename this page to dismiss \u2192</a></div>' +
+    '<div class="wholine">A quick tour \u2014 then make this page yours.</div>' +
+    '<ul class="howlist">' + HOWTO.map(h => '<li><b>' + h[0] + '</b> \u2014 ' + h[1] + '</li>').join('') + '</ul></div>';
+  $("howtoRename").onclick = e => { e.preventDefault(); renamePage(state.cur); };
 }
 if (state.fit === undefined) state.fit = true;
 if (state.help === undefined) state.help = true;
@@ -650,7 +728,9 @@ document.addEventListener("mousedown", e => {
 function saveFile(){
   const blob = new Blob([JSON.stringify({ pages: state.pages, cur: state.cur }, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "qip-diagrams.json"; a.click();
+  const nm = (state.pages.length > 1 ? "qip-projects" : (state.pages[0].name || "qip-project"))
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  a.href = URL.createObjectURL(blob); a.download = (nm || "qip-projects") + ".json"; a.click();
   URL.revokeObjectURL(a.href);
 }
 function openFile(){ $("filein").click(); }
@@ -734,6 +814,7 @@ function exportPNG(){
 function b64e(s){ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))); }
 function buildShareUrl(){
+  if (collab.on) return location.origin + location.pathname + "?mode=" + state.mode + "&room=" + collab.room;
   const payload = b64e(JSON.stringify({ pages: state.pages, cur: state.cur }));
   return location.origin + location.pathname + "?mode=" + state.mode + "#d=" + payload;
 }
@@ -779,7 +860,8 @@ function loadShared(replace){
       beginChange();
       j.pages.forEach(pg => {
         pg.id = nid();
-        pg.name = uniqueName((pg.name || "Shared") + " (shared)");
+        const base = (pg.name || "Shared").replace(/ \(shared\)$/, "");
+        pg.name = uniqueName(base + " (shared)");
         state.pages.push(pg);
       });
       state.cur = state.pages.length - 1;
@@ -792,13 +874,265 @@ window.addEventListener("hashchange", () => {
   if (loadShared(false)){ render(); showToast("Shared pages added \u2014 your own pages are untouched", 4500); }
 });
 
+/* =========================================================================
+   LIVE COLLABORATION & CROSS-DEVICE SYNC (both optional) \u2014 Firebase
+   -------------------------------------------------------------------------
+   SETUP (about 5\u201310 minutes, free on Firebase\u2019s Spark plan \u2014 no card needed):
+     1. console.firebase.google.com \u2192 Add project (analytics not needed).
+     2. Build \u2192 Realtime Database \u2192 Create database \u2192 pick a region
+        (europe-west1) \u2192 start in LOCKED mode.
+     3. Rules tab \u2192 paste the contents of firebase-rules.json \u2192 Publish.
+     4. Build \u2192 Authentication \u2192 Get started \u2192 Sign-in method \u2192 enable
+        \u201CEmail/Password\u201D \u2192 turn on the \u201CEmail link (passwordless sign-in)\u201D
+        toggle within it. (Only needed for cross-device sync, not for rooms.)
+     5. Project settings \u2192 Your apps \u2192 Web app (</>) \u2192 register \u2192 copy the
+        apiKey and databaseURL out of the config it shows you.
+     6. Paste them below, save, push to GitHub. That\u2019s it.
+   Leave FB_CONFIG blank and everything else in the tool still works \u2014 the
+   Collaborate and \u201CSign in to sync\u201D buttons simply explain they haven\u2019t
+   been set up yet.
+   NOTE: these keys are meant to be public; the rules are what protect data.
+   Never put patient-identifiable data in a shared room or synced project.
+   ========================================================================= */
+const FB_CONFIG = {
+  apiKey: "AIzaSyCmhue-4pHOxLalW8zEy96dmEklhxLARQE",
+  databaseURL: "https://aim-qip-qehb-default-rtdb.europe-west1.firebasedatabase.app"
+};
+const FB_SDK = "https://www.gstatic.com/firebasejs/12.17.0/";
+const collab = { on: false, room: null, ref: null, presRef: null, meRef: null, me: null, applying: false, timer: null, people: 1 };
+const sync = { on: false, uid: null, email: null, ref: null, applying: false, timer: null, primed: false };
+
+function fbReady(){ return !!(FB_CONFIG.apiKey && FB_CONFIG.databaseURL); }
+function loadScript(url){
+  return new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = url; s.onload = res; s.onerror = () => rej(new Error("load failed: " + url));
+    document.head.appendChild(s);
+  });
+}
+let fbLoading = null;
+function loadFirebase(){
+  if (window.firebase && firebase.database && firebase.auth) return Promise.resolve();
+  if (!fbLoading){
+    fbLoading = loadScript(FB_SDK + "firebase-app-compat.js")
+      .then(() => Promise.all([loadScript(FB_SDK + "firebase-database-compat.js"), loadScript(FB_SDK + "firebase-auth-compat.js")]))
+      .then(() => { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); });
+  }
+  return fbLoading;
+}
+function roomCode(){
+  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // no I/O/0/1
+  let s = ""; for (let i = 0; i < 6; i++) s += A[Math.floor(Math.random() * A.length)];
+  return s;
+}
+function renderLive(){
+  const bar = $("livebar");
+  if (!collab.on){ bar.className = ""; bar.innerHTML = ""; $("collabbtn").textContent = "Collaborate"; return; }
+  bar.className = "on";
+  bar.innerHTML = '<span class="dot"></span><b>Live</b>' +
+    '<span>Room <span class="code">' + collab.room + '</span></span>' +
+    '<span>' + collab.people + (collab.people === 1 ? " person" : " people") + " editing</span>" +
+    '<button onclick="shareLink()">Copy invite link</button>' +
+    '<button onclick="leaveRoom()">Leave</button>' +
+    '<span style="color:var(--grey)">Everyone in this room edits the same pages \u2014 no patient-identifiable data.</span>';
+  $("collabbtn").textContent = "Leave room";
+}
+function pushLive(){
+  if (!collab.on || collab.applying || !collab.primed) return;
+  clearTimeout(collab.timer);
+  collab.timer = setTimeout(() => {
+    collab.ref.child("doc").set({ pages: state.pages, by: collab.me, t: Date.now() }).catch(() => {});
+  }, 350);
+}
+function typingNow(){ return document.activeElement && document.activeElement.isContentEditable; }
+let pendingDoc = null;
+function applyDoc(d){
+  if (!d || !Array.isArray(d.pages) || d.by === collab.me) return;
+  if (typingNow()){ pendingDoc = d; return; }            // don\u2019t yank text from under someone
+  collab.applying = true;
+  state.pages = d.pages;
+  if (state.cur >= state.pages.length) state.cur = state.pages.length - 1;
+  state.sel = null; render();
+  collab.applying = false;
+}
+document.addEventListener("focusout", () => {
+  setTimeout(() => { if (pendingDoc && !typingNow()){ const d = pendingDoc; pendingDoc = null; applyDoc(d); } }, 60);
+});
+function joinRoom(code, seed){
+  return loadFirebase().then(() => {
+    collab.room = code;
+    collab.me = Math.random().toString(36).slice(2, 10);
+    collab.ref = firebase.database().ref("rooms/" + code);
+    collab.on = true;
+    collab.primed = !!seed;
+    if (seed) collab.ref.child("doc").set({ pages: state.pages, by: collab.me, t: Date.now() });
+    collab.ref.child("doc").on("value", s => { applyDoc(s.val()); collab.primed = true; });
+    collab.presRef = collab.ref.child("presence");
+    collab.meRef = collab.presRef.child(collab.me);
+    collab.meRef.set(Date.now());
+    collab.meRef.onDisconnect().remove();
+    collab.presRef.on("value", s => { collab.people = s.numChildren() || 1; renderLive(); });
+    const u = new URL(location.href); u.searchParams.set("room", code); u.hash = "";
+    history.replaceState(null, "", u.toString());
+    renderLive();
+  });
+}
+function leaveRoom(){
+  if (!collab.on) return;
+  try { collab.ref.child("doc").off(); collab.presRef.off(); collab.meRef.remove(); } catch (e) {}
+  collab.on = false; collab.room = null;
+  const u = new URL(location.href); u.searchParams.delete("room"); history.replaceState(null, "", u.toString());
+  if (!loadLocal()) blankPageSet();   // restore your own saved projects, not the room's
+  state.sel = null; render();
+  renderLive();
+  showToast("Left the room \u2014 back to your own saved projects", 4000);
+}
+function toggleCollab(){
+  if (collab.on){ leaveRoom(); return; }
+  if (!fbReady()){
+    alert("Live collaboration isn\u2019t switched on for this copy of the tool yet.\n\n" +
+          "It needs a free Firebase project (Spark plan \u2014 no payment card): create one, paste the apiKey and databaseURL into FB_CONFIG near the bottom of this file, and publish the rules in firebase-rules.json.\n\n" +
+          "Until then, use \u201CShare link\u201D to send your diagrams to colleagues.");
+    return;
+  }
+  const code = roomCode();
+  joinRoom(code, true)
+    .then(() => { copyText(buildShareUrl(), () => {}); showToast("Live room " + code + " started \u2014 invite link copied", 5000); })
+    .catch(() => alert("Couldn\u2019t reach Firebase. Check your connection, or use \u201CShare link\u201D instead."));
+}
+
+/* ---------- cross-device sync (optional) \u2014 sign in with an emailed link, your named projects follow you ---------- */
+const SYNC_EMAIL_KEY = "aimqip.syncEmail";
+function renderSync(){
+  const b = $("syncbtn");
+  if (sync.on){
+    b.textContent = "Synced \u2014 " + sync.email + "  \u00D7";
+    b.className = "btn synced";
+    b.title = "Click to sign out. Your projects stay on this device \u2014 signing out just stops the cloud copy.";
+  } else {
+    b.textContent = "Sign in to sync";
+    b.className = "btn";
+    b.title = "Make your named projects follow you to another device.";
+  }
+}
+function stripIds(v){ return JSON.parse(JSON.stringify(v), (k, val) => k === "id" ? undefined : val); }
+function isUntouchedPage(pg){
+  if (!pg || pg.name !== "Page 1") return false;
+  return JSON.stringify(stripIds(pg.process)) === JSON.stringify(stripIds(blankProcess())) &&
+         JSON.stringify(stripIds(pg.driver)) === JSON.stringify(stripIds(blankDriver())) &&
+         JSON.stringify(stripIds(pg.whys)) === JSON.stringify(stripIds(blankWhys()));
+}
+function mergeCloudLibrary(cloudPages, cloudCur){
+  if (!Array.isArray(cloudPages) || !cloudPages.length){ pushCloudLibrary(true); return; }  // nothing in the cloud yet \u2014 seed it
+  const onlyDefault = state.pages.length === 1 && isUntouchedPage(state.pages[0]);
+  sync.applying = true;
+  if (onlyDefault){
+    state.pages = cloudPages;
+    state.cur = Math.min(cloudCur || 0, cloudPages.length - 1);
+  } else {
+    const cloudIds = new Set(cloudPages.map(p => p.id));
+    const extra = state.pages.filter(p => !cloudIds.has(p.id));
+    state.pages = cloudPages.concat(extra);
+    state.cur = 0;
+  }
+  sync.applying = false;
+  state.sel = null; render();
+  pushCloudLibrary(true);   // write the merged result straight back so both sides agree
+}
+function pushCloudLibrary(immediate){
+  if (!sync.on || sync.applying || collab.on) return;
+  clearTimeout(sync.timer);
+  const go = () => sync.ref.set({ pages: state.pages, cur: state.cur, t: Date.now() }).catch(() => {});
+  if (immediate) go(); else sync.timer = setTimeout(go, 500);
+}
+function attachSync(user){
+  sync.on = true; sync.uid = user.uid; sync.email = user.email;
+  sync.ref = firebase.database().ref("users/" + user.uid + "/library");
+  try { localStorage.setItem("aimqip.synced", "1"); } catch (e) {}
+  sync.ref.get().then(snap => {
+    const v = snap.val();
+    mergeCloudLibrary(v && v.pages, v && v.cur);
+  }).catch(() => showToast("Signed in, but couldn\u2019t reach your synced projects \u2014 check your connection", 4500));
+  renderSync();
+}
+function signInToSync(){
+  if (sync.on){ signOutOfSync(); return; }
+  if (!fbReady()){
+    alert("Cross-device sync isn\u2019t switched on for this copy of the tool yet.\n\n" +
+          "It needs the same free Firebase project as Collaborate, with Email link sign-in turned on (Authentication \u2192 Sign-in method). See COLLABORATION_SETUP.md.\n\n" +
+          "Until then, use \u201CSave file\u201D and \u201COpen\u2026\u201D to move projects between devices.");
+    return;
+  }
+  const email = window.prompt("Your email address \u2014 we\u2019ll send a one-click sign-in link. No password, no account to set up.");
+  if (!email || !email.trim()) return;
+  const clean = email.trim();
+  loadFirebase().then(() => {
+    const url = location.origin + location.pathname;   // no query string \u2014 Firebase appends its own mode=/oobCode= here
+    return firebase.auth().sendSignInLinkToEmail(clean, { url: url, handleCodeInApp: true });
+  }).then(() => {
+    try { localStorage.setItem(SYNC_EMAIL_KEY, clean); } catch (e) {}
+    showToast("Check " + clean + " for a sign-in link \u2014 open it on any device to sync", 6000);
+  }).catch(err => alert("Couldn\u2019t send the sign-in link (" + (err && err.message ? err.message : "check your connection") + ")."));
+}
+function signOutOfSync(){
+  if (!sync.on) return;
+  try { sync.ref.off(); } catch (e) {}
+  try { firebase.auth().signOut(); } catch (e) {}
+  try { localStorage.removeItem("aimqip.synced"); } catch (e) {}
+  sync.on = false; sync.uid = null; sync.email = null; sync.ref = null;
+  renderSync();
+  showToast("Signed out \u2014 these projects stay on this device; sign in again anytime to reconnect them", 5000);
+}
+function completeEmailLinkSignIn(){
+  return loadFirebase().then(() => {
+    if (!firebase.auth().isSignInWithEmailLink(location.href)) return false;
+    let email = null;
+    try { email = localStorage.getItem(SYNC_EMAIL_KEY); } catch (e) {}
+    if (!email) email = window.prompt("Confirm the email address you requested the sign-in link with:");
+    if (!email) return false;
+    return firebase.auth().signInWithEmailLink(email, location.href).then(result => {
+      try { localStorage.removeItem(SYNC_EMAIL_KEY); } catch (e) {}
+      const u = new URL(location.href);
+      ["apiKey", "oobCode", "mode", "lang", "continueUrl"].forEach(k => u.searchParams.delete(k));
+      history.replaceState(null, "", u.pathname + (u.search || ""));
+      attachSync(result.user);
+      showToast("Signed in \u2014 your saved projects have joined this device", 5500);
+      return true;
+    });
+  }).catch(err => { alert("That sign-in link didn\u2019t work (" + (err && err.message ? err.message : "it may have expired") + "). Try \u201CSign in to sync\u201D again."); return false; });
+}
+
 /* ---------- boot ---------- */
 const q = new URLSearchParams(location.search);
 if (q.get("mode")){ const m = q.get("mode"); state.mode = (m === "driver" || m === "whys") ? m : "process"; }
-const opened = loadShared(true);
+const hadLocal = loadLocal();                 // restore this browser's own named, separate projects
+const opened = loadShared(!hadLocal);         // replace only into a truly empty tool; otherwise merge in as new pages
 render();
-if (opened) showToast("Opened from a shared link \u2014 edit freely, then Share link to send it back", 6000);
+let bootToasted = false;
+if (q.get("room")){
+  if (fbReady()){
+    joinRoom(q.get("room").toUpperCase(), false)
+      .then(() => showToast("Joined live room " + q.get("room").toUpperCase() + " \u2014 you are editing together", 5500))
+      .catch(() => alert("Couldn\u2019t join that room \u2014 check your connection."));
+    bootToasted = true;
+  } else {
+    alert("This invite is for a live room, but collaboration isn\u2019t configured on this copy of the tool.");
+  }
+}
+if (opened){
+  showToast(hadLocal ? "Shared pages added \u2014 your own saved projects are untouched" : "Opened from a shared link \u2014 edit freely, then Share link to send it back", 6000);
+  bootToasted = true;
+}
 if (q.get("example")) loadExample();
+if (fbReady() && q.get("oobCode")){
+  bootToasted = true;
+  completeEmailLinkSignIn();      // async; renders/toasts itself once it resolves
+} else if (fbReady() && (() => { try { return !!localStorage.getItem("aimqip.synced"); } catch (e) { return false; } })()){
+  loadFirebase().then(() => {
+    firebase.auth().onAuthStateChanged(user => { if (user && !sync.on) attachSync(user); });
+  }).catch(() => {});
+}
+if (!bootToasted && hadLocal) showToast("Welcome back \u2014 your saved projects are just as you left them", 3200);
 </script>
 </body>
 </html>
