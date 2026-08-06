@@ -33,6 +33,19 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .wroot{background:var(--aqua);border:1px solid var(--teal);border-radius:10px;padding:11px 16px;font-size:15px;font-weight:bold;color:var(--dark);display:flex;align-items:center;gap:12px}
 .warrow{text-align:center;font-size:11px;font-style:italic;font-weight:bold;color:var(--teal);padding:5px 0}
 .wcard .ntext,.wprob .ntext{text-align:left}
+.pcard{position:absolute;display:flex;align-items:stretch;gap:0;border:1px solid var(--teal);border-radius:10px;background:#fff;overflow:hidden}
+.pcard .pnum{flex:0 0 42px;background:var(--dark);color:#fff;font-weight:bold;font-size:15px;display:flex;align-items:center;justify-content:center}
+.pcard .plab{flex:0 0 128px;background:var(--aqua);color:var(--dark);font-weight:bold;font-size:12px;display:flex;align-items:center;padding:0 12px}
+.pcard .ntext{flex:1;text-align:left;font-size:14px;justify-content:flex-start;padding:10px 14px}
+.gaxis{position:absolute;background:var(--grey)}
+.gtick{position:absolute;font-size:10px;font-weight:bold;letter-spacing:1.2px;color:var(--grey)}
+.gquad{position:absolute;font-size:10.5px;font-style:italic;color:var(--ph);pointer-events:none}
+.gquad.win{font-style:normal;font-weight:bold;color:var(--teal);background:var(--aqua);border-radius:12px;padding:3px 10px}
+.gchip{position:absolute;border:1.4px solid var(--teal);background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:grab;touch-action:none}
+.gchip.sel{box-shadow:0 0 0 2.5px var(--sea)}
+.gchip.drag{cursor:grabbing;box-shadow:0 6px 16px rgba(0,0,0,.22);z-index:20}
+.gchip .ntext{font-size:12.5px;text-align:center;padding:6px 9px}
+.gchip .ndel{top:-8px;right:-8px}
 .waddw{display:block;margin:10px auto 0;border:1px dashed var(--teal);background:transparent;color:var(--teal);padding:7px 16px;border-radius:18px;cursor:pointer;font:inherit;font-size:13px}
 #livebar{display:none;align-items:center;gap:12px;padding:7px 22px;background:#E6F3EA;border-bottom:1px solid #A8D5B5;font-size:12px;color:var(--navy);flex-wrap:wrap}
 #livebar.on{display:flex}
@@ -51,6 +64,10 @@ header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wra
 .plabel{font-size:10px;font-weight:bold;letter-spacing:1.2px;color:var(--grey)}
 .pchip{display:flex;align-items:center;gap:7px;border:1px solid var(--teal);background:#fff;color:var(--teal);padding:5px 8px 5px 13px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:bold}
 .pchip.on{background:var(--teal);color:#fff}
+.pchip .pe{width:16px;height:16px;line-height:15px;text-align:center;border-radius:50%;font-size:10px;font-weight:normal;background:rgba(0,0,0,.10);display:none}
+.pchip.on .pe,.pchip:hover .pe{display:inline-block}
+.pchip.on .pe{background:rgba(255,255,255,.25)}
+.pchip .pe:hover{background:var(--sea);color:#fff}
 .pchip .px{width:16px;height:16px;line-height:15px;text-align:center;border-radius:50%;font-size:11px;font-weight:normal;background:rgba(0,0,0,.10)}
 .pchip.on .px{background:rgba(255,255,255,.25)}
 .pchip .px:hover{background:#da291c;color:#fff}
@@ -132,7 +149,8 @@ footer{padding:14px 22px;font-size:11px;color:var(--teal)}
 footer span{float:right;color:#9AA5AA}
 #fit{margin:0 auto}
 #board{transform-origin:0 0}
-@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel,.dnode .nsib,.wcard .ndel{display:block}}
+@media (hover:none),(pointer:coarse){.node .nadd,.node .ndel,.dnode .nadd,.dnode .ndel,.dnode .nsib,.wcard .ndel{display:block}
+  .pchip .pe{display:inline-block}}
 @media (max-width:760px){
   header{padding:10px 12px;gap:8px}
   .brand h1{font-size:17px}
@@ -171,6 +189,8 @@ footer span{float:right;color:#9AA5AA}
     <h1>QIP Diagram Tool</h1>
   </div>
   <div class="tabs">
+    <button class="tab" id="tabB" onclick="setMode('pitch')">Pitch</button>
+    <button class="tab" id="tabG" onclick="setMode('grid')">2×2 Ideas</button>
     <button class="tab on" id="tabP" onclick="setMode('process')">Process Map</button>
     <button class="tab" id="tabW" onclick="setMode('whys')">5 Whys</button>
     <button class="tab" id="tabD" onclick="setMode('driver')">Driver Diagram</button>
@@ -203,7 +223,7 @@ footer span{float:right;color:#9AA5AA}
 <div id="who"></div>
 <div id="wrap"><div id="fit"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div></div>
 <div class="legend" id="legend"></div>
-<footer>AIM Quality Improvement Team&nbsp; | &nbsp;Queen Elizabeth Hospital Birmingham <span>Stage 2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
+<footer>AIM Quality Improvement Team&nbsp; | &nbsp;Queen Elizabeth Hospital Birmingham <span>Stages 1–2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
 
 <script>
 "use strict";
@@ -225,13 +245,31 @@ function blankDriver(){ return { aim: "", primaries: [
   { id: nid(), text: "", secondaries: [ { id: nid(), text: "", ideas: [ { id: nid(), text: "" } ] } ] }
 ]};}
 function blankWhys(){ return { problem: "", whys: ["", "", ""] }; }
-state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver(), whys: blankWhys() }];
+const PITCH_LABELS = ["The problem", "The number", "The aim", "Why it matters", "The ask"];
+const PITCH_PH = [
+  "What\u2019s going wrong, for which patients \u2014 as you\u2019ve seen it on the ward\u2026",
+  "One honest local figure: \u201C12 of 20 charts last week\u201D\u2026",
+  "From [X] to [Y] by [date]\u2026",
+  "The WHO quality domain it targets \u2014 and what it means for patients\u2026",
+  "A named supervisor \u2014 and a \u2018yes, go ahead\u2019 to collect baseline data\u2026"
+];
+function blankPitch(){ return ["", "", "", "", ""]; }
+function blankGrid(){ return []; }
+state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver(), whys: blankWhys(), pitch: blankPitch(), grid: blankGrid() }];
 state.cur = 0;
 Object.defineProperty(state, "process", { get(){ return state.pages[state.cur].process; }, set(v){ state.pages[state.cur].process = v; } });
 Object.defineProperty(state, "driver", { get(){ return state.pages[state.cur].driver; }, set(v){ state.pages[state.cur].driver = v; } });
 Object.defineProperty(state, "whys", {
   get(){ const pg = state.pages[state.cur]; if (!pg.whys) pg.whys = blankWhys(); return pg.whys; },
   set(v){ state.pages[state.cur].whys = v; }
+});
+Object.defineProperty(state, "pitch", {
+  get(){ const pg = state.pages[state.cur]; if (!pg.pitch) pg.pitch = blankPitch(); return pg.pitch; },
+  set(v){ state.pages[state.cur].pitch = v; }
+});
+Object.defineProperty(state, "grid", {
+  get(){ const pg = state.pages[state.cur]; if (!pg.grid) pg.grid = blankGrid(); return pg.grid; },
+  set(v){ state.pages[state.cur].grid = v; }
 });
 function uniqueName(base){
   const names = state.pages.map(p => p.name);
@@ -245,8 +283,11 @@ function renderPages(){
   state.pages.forEach((p, i) => {
     const chip = document.createElement("div");
     chip.className = "pchip" + (i === state.cur ? " on" : "");
-    chip.title = "Click to open \u00B7 double-click to rename";
+    chip.title = "Click to open \u00B7 \u270E to rename";
     const nm = document.createElement("span"); nm.textContent = p.name; chip.appendChild(nm);
+    const ed = document.createElement("span"); ed.className = "pe"; ed.textContent = "\u270E"; ed.title = "Rename this page";
+    ed.onclick = ev => { ev.stopPropagation(); renamePage(i); };
+    chip.appendChild(ed);
     const x = document.createElement("span"); x.className = "px"; x.textContent = "\u00D7"; x.title = "Delete page";
     x.onclick = ev => { ev.stopPropagation(); delPage(i); };
     chip.appendChild(x);
@@ -258,8 +299,12 @@ function renderPages(){
   add.onclick = addPage; bar.appendChild(add);
 }
 function addPage(){
+  const fallback = uniqueName("Page " + (state.pages.length + 1));
+  const typed = prompt("Name this page \u2014 usually your QIP or the cycle it covers:", fallback);
+  if (typed === null) return;                       // cancelled \u2014 don\u2019t create a stray page
   beginChange();
-  state.pages.push({ id: nid(), name: uniqueName("Page " + (state.pages.length + 1)), process: blankProcess(), driver: blankDriver(), whys: blankWhys() });
+  const name = uniqueName((typed || "").trim() || fallback);
+  state.pages.push({ id: nid(), name: name, process: blankProcess(), driver: blankDriver(), whys: blankWhys(), pitch: blankPitch(), grid: blankGrid() });
   state.cur = state.pages.length - 1; state.sel = null; render();
 }
 function delPage(i){
@@ -272,10 +317,13 @@ function delPage(i){
   state.sel = null; render();
 }
 function renamePage(i){
-  const v = prompt("Page name:", state.pages[i].name);
+  const v = prompt("Name this page \u2014 usually your QIP or the cycle it covers:", state.pages[i].name);
   if (v === null) return;
   const t = v.trim(); if (!t || t === state.pages[i].name) return;
-  beginChange(); state.pages[i].name = t; render();
+  const others = state.pages.filter((_, k) => k !== i).map(pg => pg.name);
+  let name = t, n = 2;
+  while (others.indexOf(name) >= 0) name = t + " " + (n++);
+  beginChange(); state.pages[i].name = name; render();
 }
 
 /* ---------- history (undo / redo) ---------- */
@@ -307,7 +355,7 @@ function loadLocal(){
     return true;
   } catch (e){ return false; }
 }
-function blankPageSet(){ state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver(), whys: blankWhys() }]; state.cur = 0; }
+function blankPageSet(){ state.pages = [{ id: nid(), name: "Page 1", process: blankProcess(), driver: blankDriver(), whys: blankWhys(), pitch: blankPitch(), grid: blankGrid() }]; state.cur = 0; }
 function applySnap(s){ const j = JSON.parse(s); state.pages = j.pages; state.cur = Math.min(j.cur || 0, j.pages.length - 1); state.sel = null; render(); }
 function doUndo(){ if (!undoStack.length) return; redoStack.push(snap()); applySnap(undoStack.pop()); updateHistBtns(); }
 function doRedo(){ if (!redoStack.length) return; undoStack.push(snap()); applySnap(redoStack.pop()); updateHistBtns(); }
@@ -356,7 +404,21 @@ function loadExample(){
     "Nothing prompts it while the chart is being written",
     "The clerking proforma predates the VTE requirement"
   ] };
-  state.pages.push({ id: nid(), name: uniqueName("Example \u2014 VTE"), process: procEx, driver: drvEx, whys: whysEx });
+  const pitchEx = [
+    "VTE assessment is one of the commonest things missed at clerking on AMU \u2014 and missing it exposes patients to a preventable clot.",
+    "Last month only 12 of 20 drug charts we checked had the VTE section completed within 24 hours.",
+    "We aim to increase completed VTE assessments on AMU from 60% to 90% by March 2027.",
+    "That\u2019s safer care: every missed assessment is a patient who could have been protected and wasn\u2019t.",
+    "Dr [supervisor] has agreed to supervise \u2014 we\u2019re asking for the go-ahead to collect four weeks of baseline data."
+  ];
+  const gridEx = [
+    { id: nid(), text: "VTE prompt on the clerking proforma", x: 0.74, y: 0.20 },
+    { id: nid(), text: "Pre-printed VTE box on the chart", x: 0.30, y: 0.24 },
+    { id: nid(), text: "Weekly run chart at board round", x: 0.62, y: 0.44 },
+    { id: nid(), text: "Teaching slot at induction", x: 0.70, y: 0.74 },
+    { id: nid(), text: "Poster in doctors\u2019 office", x: 0.86, y: 0.86 }
+  ];
+  state.pages.push({ id: nid(), name: uniqueName("Example \u2014 VTE"), process: procEx, driver: drvEx, whys: whysEx, pitch: pitchEx, grid: gridEx });
   state.cur = state.pages.length - 1;
   state.sel = null; render();
 }
@@ -365,6 +427,8 @@ function clearMode(){
   beginChange();
   if (state.mode === "process") state.process = blankProcess();
   else if (state.mode === "whys") state.whys = blankWhys();
+  else if (state.mode === "pitch") state.pitch = blankPitch();
+  else if (state.mode === "grid") state.grid = blankGrid();
   else state.driver = blankDriver();
   state.sel = null; render();
 }
@@ -709,6 +773,162 @@ function renderWhys(board, svg, nodes){
   const bar = $("nodebar"); bar.innerHTML = "";
   const l = document.createElement("span"); l.className = "lbl"; l.textContent = "CLICK A BOX AND TYPE   \u00B7   \u00D7 = DELETE A WHY"; bar.appendChild(l);
 }
+function renderPitch(board, svg, nodes){
+  const P = state.pitch;
+  const X = 110, W = 900, CH = 74, GAPY = 16, TOP = 44;
+  board.style.height = (TOP + 5 * (CH + GAPY) + 40) + "px";
+  const head = document.createElement("div");
+  head.className = "colhead"; head.style.left = X + "px"; head.style.top = "14px";
+  head.textContent = "THE FIVE-SENTENCE PITCH";
+  nodes.appendChild(head);
+  PITCH_LABELS.forEach((lab, i) => {
+    const y = TOP + i * (CH + GAPY);
+    const card = document.createElement("div");
+    card.className = "pcard" + (state.sel === "pitch" + i ? " sel" : "");
+    card.style.cssText = "left:" + X + "px;top:" + y + "px;width:" + W + "px;height:" + CH + "px";
+    const num = document.createElement("div"); num.className = "pnum"; num.textContent = (i + 1);
+    const lb = document.createElement("div"); lb.className = "plab"; lb.textContent = lab;
+    card.appendChild(num); card.appendChild(lb);
+    const ed = editable("ntext", P[i], PITCH_PH[i], v => { P[i] = v; });
+    card.appendChild(ed);
+    card.addEventListener("mousedown", e => { if (state.sel !== "pitch" + i){ e.preventDefault(); state.sel = "pitch" + i; render(); } });
+    nodes.appendChild(card);
+    if (state.sel === "pitch" + i) focusEnd(ed);
+  });
+  svg.innerHTML = "";
+  $("who").style.display = "none";
+  $("drvhelp").style.display = "none";
+  $("hint").innerHTML = "<b>Five-sentence pitch:</b> click a line and type. Keep each to one sentence \u2014 problem, one honest local number, the aim, why it matters, and what you\u2019re asking for. The longer answers stay in your back pocket for the questions afterwards.";
+  $("legend").innerHTML = "<span><i>Tip</i>&nbsp; if you can\u2019t say it in five sentences, the aim is probably too big for one cycle.</span>";
+  const bar = $("nodebar"); bar.innerHTML = "";
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "CLICK A LINE AND TYPE"; bar.appendChild(l);
+  if (state.help){
+    const w = $("drvhelp"); w.style.display = "block";
+    w.innerHTML = '<div class="whoin"><div class="whohead">IN YOUR BACK POCKET \u2014 THE FOUR QUESTIONS THE ROOM WILL ASK</div>' +
+      '<div class="wholine">Have a one-line answer to each, in your head \u2014 not in the script.</div>' +
+      '<div class="dgrid">' +
+      [["\u201CWhat is it?\u201D", "The problem and your aim \u2014 sentences 1\u20133."],
+       ["\u201CHow does it work?\u201D", "The change you\u2019d test first, and why that one."],
+       ["\u201CCan you back it up?\u201D", "Your local number, and how you\u2019ll measure it."],
+       ["\u201CCan you do it?\u201D", "Who\u2019s supervising, who\u2019s said yes, and by when."]]
+        .map(d => '<div class="dcard"><b>' + d[0] + '</b>' + d[1] + '</div>').join('') +
+      '</div></div>';
+  }
+}
+function gridGeom(){ return { LX: 150, TY: 56, W: 830, H: 520, CW: 168, CH: 46 }; }
+function renderGrid(board, svg, nodes){
+  const g = gridGeom();
+  board.style.height = (g.TY + g.H + 70) + "px";
+  const mkAxis = (css) => { const d = document.createElement("div"); d.className = "gaxis"; d.style.cssText = css; nodes.appendChild(d); };
+  mkAxis("left:" + g.LX + "px;top:" + g.TY + "px;width:2px;height:" + g.H + "px");
+  mkAxis("left:" + g.LX + "px;top:" + (g.TY + g.H) + "px;width:" + g.W + "px;height:2px");
+  const midX = g.LX + g.W / 2, midY = g.TY + g.H / 2;
+  const dash = document.createElement("div"); dash.className = "gaxis";
+  dash.style.cssText = "left:" + midX + "px;top:" + g.TY + "px;width:1px;height:" + g.H + "px;opacity:.35";
+  nodes.appendChild(dash);
+  const dash2 = document.createElement("div"); dash2.className = "gaxis";
+  dash2.style.cssText = "left:" + g.LX + "px;top:" + midY + "px;width:" + g.W + "px;height:1px;opacity:.35";
+  nodes.appendChild(dash2);
+  const t1 = document.createElement("div"); t1.className = "gtick";
+  t1.style.cssText = "left:6px;top:" + (g.TY + g.H / 2 - 10) + "px;width:130px;text-align:right";
+  t1.textContent = "IMPACT \u2191"; nodes.appendChild(t1);
+  const t2 = document.createElement("div"); t2.className = "gtick";
+  t2.style.cssText = "left:" + g.LX + "px;top:" + (g.TY + g.H + 12) + "px;width:" + g.W + "px;text-align:center";
+  t2.textContent = "EASE OF DELIVERY \u2192"; nodes.appendChild(t2);
+  const quads = [
+    ["win", "QUICK WINS \u2014 START HERE", midX + 16, g.TY + 12],
+    ["", "big bets \u2014 later cycles", g.LX + 14, g.TY + 14],
+    ["", "park these", g.LX + 14, g.TY + g.H - 26],
+    ["", "easy, but low yield", midX + 16, g.TY + g.H - 26]
+  ];
+  quads.forEach(q => {
+    const el = document.createElement("div"); el.className = "gquad " + q[0];
+    el.style.cssText = "left:" + q[2] + "px;top:" + q[3] + "px";
+    el.textContent = q[1]; nodes.appendChild(el);
+  });
+  const scale = () => { const r = board.getBoundingClientRect(); return r.width / 1120 || 1; };
+  state.grid.forEach(item => {
+    const cx = g.LX + item.x * g.W, cy = g.TY + item.y * g.H;
+    const el = document.createElement("div");
+    el.className = "gchip" + (state.sel === item.id ? " sel" : "");
+    el.style.cssText = "left:" + (cx - g.CW / 2) + "px;top:" + (cy - g.CH / 2) + "px;width:" + g.CW + "px;min-height:" + g.CH + "px";
+    const ed = editable("ntext", item.text, "idea\u2026", v => { item.text = v; });
+    el.appendChild(ed);
+    const del = document.createElement("button"); del.className = "ndel"; del.textContent = "\u00D7"; del.title = "Delete idea";
+    del.onclick = e => { e.stopPropagation(); beginChange(); state.grid = state.grid.filter(z => z !== item); state.sel = null; render(); };
+    el.appendChild(del);
+    let pending = false, dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, pid = null;
+    const wasSel = () => state.sel === item.id;
+    el.addEventListener("pointerdown", e => {
+      if (e.target.closest(".ndel")) return;
+      pending = true; dragging = false; pid = e.pointerId;
+      sx = e.clientX; sy = e.clientY; ox = item.x; oy = item.y;
+      // only block the caret when the chip isn\u2019t already being edited \u2014 otherwise let the click through
+      if (!wasSel() || !e.target.closest(".ntext")) e.preventDefault();
+    });
+    el.addEventListener("pointermove", e => {
+      if (!pending) return;
+      if (!dragging){
+        if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) < 4) return;   // a click, not a drag \u2014 yet
+        dragging = true;
+        beginChange();                                   // snapshot the position BEFORE we move it
+        if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
+        try { el.setPointerCapture(pid); } catch (err) {}
+        el.classList.add("drag");
+      }
+      const k = scale();
+      item.x = Math.max(0.02, Math.min(0.98, ox + (e.clientX - sx) / k / g.W));
+      item.y = Math.max(0.02, Math.min(0.98, oy + (e.clientY - sy) / k / g.H));
+      el.style.left = (g.LX + item.x * g.W - g.CW / 2) + "px";
+      el.style.top = (g.TY + item.y * g.H - g.CH / 2) + "px";
+    });
+    const endDrag = () => {
+      if (!pending) return;
+      pending = false;
+      if (dragging){
+        dragging = false; el.classList.remove("drag");
+        afterChange();                                   // persist / sync the new position
+      } else if (!wasSel()){ state.sel = item.id; render(); }
+    };
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+    nodes.appendChild(el);
+    if (state.sel === item.id) focusEnd(ed);
+  });
+  svg.innerHTML = "";
+  $("who").style.display = "none";
+  $("drvhelp").style.display = "none";
+  $("hint").innerHTML = "<b>2\u00D72 ideas:</b> drag each idea to where it sits \u2014 higher = more impact on your aim, further right = easier for <i>you</i> to deliver this rotation. No scores needed; where it sits relative to the others is enough. Pick <b>one</b> from the top-right for cycle 1.";
+  $("legend").innerHTML = "<span><i>Tip</i>&nbsp; two minutes per idea with the team beats an hour of scoring alone.</span>";
+  const bar = $("nodebar"); bar.innerHTML = "";
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "DRAG TO POSITION   \u00B7   CLICK TO TYPE   \u00B7   \u00D7 = DELETE"; bar.appendChild(l);
+  const add = document.createElement("button"); add.className = "tbtn"; add.textContent = "+ Add idea";
+  add.onclick = () => {
+    beginChange();
+    const n = state.grid.length;
+    const item = { id: nid(), text: "", x: 0.16 + (n % 3) * 0.06, y: 0.5 + ((n % 5) - 2) * 0.07 };
+    state.grid.push(item); state.sel = item.id; render();
+  };
+  bar.appendChild(add);
+  const pull = document.createElement("button"); pull.className = "tbtn";
+  pull.textContent = "\u21D0 Pull ideas from driver diagram";
+  pull.title = "Copy every change idea from this page\u2019s driver diagram onto the grid";
+  pull.onclick = () => {
+    const texts = [];
+    (state.driver.primaries || []).forEach(pr => (pr.secondaries || []).forEach(sc => (sc.ideas || []).forEach(id => {
+      const t = (id.text || "").trim(); if (t) texts.push(t);
+    })));
+    if (!texts.length){ alert("No change ideas on this page\u2019s driver diagram yet \u2014 add some there first, or use \u201C+ Add idea\u201D."); return; }
+    const have = state.grid.map(z => (z.text || "").trim());
+    const fresh = texts.filter(t => have.indexOf(t) < 0);
+    if (!fresh.length){ alert("All of the driver diagram\u2019s change ideas are already on this grid."); return; }
+    beginChange();
+    fresh.forEach((t, k) => state.grid.push({ id: nid(), text: t, x: 0.16, y: 0.14 + k * 0.10 }));
+    state.sel = null; render();
+    showToast(fresh.length + (fresh.length === 1 ? " idea added \u2014 now drag it into place" : " ideas added \u2014 now drag them into place"), 4000);
+  };
+  bar.appendChild(pull);
+}
 const WHO = [
   ["Effective", "is the right, evidence-based care happening?"],
   ["Safe", "could harm or error be designed out?"],
@@ -737,11 +957,15 @@ function render(){
   $("tabP").className = "tab" + (state.mode === "process" ? " on" : "");
   $("tabD").className = "tab" + (state.mode === "driver" ? " on" : "");
   $("tabW").className = "tab" + (state.mode === "whys" ? " on" : "");
+  $("tabB").className = "tab" + (state.mode === "pitch" ? " on" : "");
+  $("tabG").className = "tab" + (state.mode === "grid" ? " on" : "");
   const board = $("board"), svg = $("lines"), nodes = $("nodes");
   nodes.innerHTML = "";
   svg.innerHTML = markerDefs();
   if (state.mode === "process") renderProcess(board, svg, nodes);
   else if (state.mode === "whys") renderWhys(board, svg, nodes);
+  else if (state.mode === "pitch") renderPitch(board, svg, nodes);
+  else if (state.mode === "grid") renderGrid(board, svg, nodes);
   else renderDriver(board, svg, nodes);
   svg.setAttribute("width", 1120); svg.setAttribute("height", parseInt(board.style.height, 10) || 400);
   appendGuidanceToggle($("nodebar"));
@@ -757,8 +981,8 @@ function appendGuidanceToggle(bar){
   bar.appendChild(t);
 }
 const HOWTO = [
-  ["Three tabs", "Process Map (what happens) \u2192 5 Whys (why it happens) \u2192 Driver Diagram (what to change). Work left to right."],
-  ["Pages = projects", "Each page is a separate, named project with its own diagrams. Rename this one to your QIP \u2014 doing so also dismisses this guide."],
+  ["Five tabs, left to right", "Stage 1: Pitch (five sentences) \u00B7 2\u00D72 Ideas (what to test first). Stage 2: Process Map (what happens) \u2192 5 Whys (why) \u2192 Driver Diagram (what to change)."],
+  ["Pages = projects", "Each page is a separate project with its own diagrams. Tap \u270E on the page tab to name it \u2014 naming this one also dismisses this guide."],
   ["+ New page", "Start another project, or a fresh page for cycle 2, without losing this one."],
   ["It saves itself", "Everything autosaves in this browser as you go \u2014 close the tab and it\u2019s still here next time."],
   ["Save file / Open\u2026 / Sign in to sync", "Download a portable copy, open one elsewhere, or sign in to have your named projects follow you automatically."],
@@ -772,7 +996,7 @@ function renderHowTo(){
   if (!state.help || !pg || pg.name !== "Page 1"){ el.style.display = "none"; return; }
   el.style.display = "block";
   el.innerHTML = '<div class="whoin"><div class="whohead">HOW TO USE THIS TOOL' +
-    '<a href="#" id="howtoRename">Rename this page to dismiss \u2192</a></div>' +
+    '<a href="#" id="howtoRename">\u270E Name this page to dismiss \u2192</a></div>' +
     '<div class="wholine">A quick tour \u2014 then make this page yours.</div>' +
     '<ul class="howlist">' + HOWTO.map(h => '<li><b>' + h[0] + '</b> \u2014 ' + h[1] + '</li>').join('') + '</ul></div>';
   $("howtoRename").onclick = e => { e.preventDefault(); renamePage(state.cur); };
@@ -870,7 +1094,8 @@ function exportPNG(){
   state.fit = false; render();
   html2canvas($("board"), { backgroundColor: "#ffffff", scale: 2 }).then(cv => {
     const pgnm = state.pages[state.cur].name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    const mname = state.mode === "process" ? "process-map" : (state.mode === "whys" ? "five-whys" : "driver-diagram");
+    const MODE_FILE = { process: "process-map", whys: "five-whys", driver: "driver-diagram", pitch: "five-sentence-pitch", grid: "2x2-ideas" };
+    const mname = MODE_FILE[state.mode] || "diagram";
     const name = (pgnm ? pgnm + "-" : "") + mname + ".png";
     const out = toLandscape(cv);
     out.toBlob(blob => {
@@ -1180,7 +1405,7 @@ function completeEmailLinkSignIn(){
 
 /* ---------- boot ---------- */
 const q = new URLSearchParams(location.search);
-if (q.get("mode")){ const m = q.get("mode"); state.mode = (m === "driver" || m === "whys") ? m : "process"; }
+if (q.get("mode")){ const m = q.get("mode"); state.mode = ["driver","whys","pitch","grid"].indexOf(m) >= 0 ? m : "process"; }
 const hadLocal = loadLocal();                 // restore this browser's own named, separate projects
 const opened = loadShared(!hadLocal);         // replace only into a truly empty tool; otherwise merge in as new pages
 render();
