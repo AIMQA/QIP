@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SAM QIP Diagram Tool — pitch, 2×2, process maps, 5 Whys & driver diagrams</title>
+<title>Sample Website QIP Diagram Tool — pitch, 2×2, process maps, 5 Whys & driver diagrams</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js" defer></script>
 <style>
@@ -196,7 +196,7 @@ footer span{float:right;color:#93A69A}
 <body>
 <header>
   <div class="brand">
-    <div class="eyebrow">SOCIETY FOR ACUTE MEDICINE \u00B7 QUALITY IMPROVEMENT</div>
+    <div class="eyebrow">SAMPLE WEBSITE &middot; QUALITY IMPROVEMENT</div>
     <h1>QIP Diagram Tool</h1>
   </div>
   <div class="tabs">
@@ -236,7 +236,7 @@ footer span{float:right;color:#93A69A}
 <div id="who"></div>
 <div id="wrap"><div id="fit"><div id="board"><svg id="lines"></svg><div id="nodes"></div></div></div></div>
 <div class="legend" id="legend"></div>
-<footer>Society for Acute Medicine&nbsp; | &nbsp;Society for Acute Medicine <span>Stages 1–2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
+<footer>Sample Website&nbsp; | &nbsp;Sample Website <span>Stages 1–2 of the QIP Roadmap — export the PNG into your slides or workbook</span></footer>
 
 <script>
 "use strict";
@@ -1309,7 +1309,7 @@ async function exportPPTX(){
         slide.addText(state.pages[pi].name.toUpperCase(), { x: MARGIN, y: 0.12, w: SLIDE_W - MARGIN * 2, h: 0.28, fontSize: 11, bold: true, color: "7DD08F", fontFace: "Calibri", charSpacing: 2 });
         slide.addText(MODE_LABEL[mode], { x: MARGIN, y: 0.38, w: SLIDE_W - MARGIN * 2, h: 0.44, fontSize: 22, bold: true, color: "FFFFFF", fontFace: "Calibri" });
         slide.addImage({ data: dataUrl, x: imgX, y: imgY, w: imgW, h: imgH });
-        slide.addText("Society for Acute Medicine  |  Quality Improvement", { x: MARGIN, y: SLIDE_H - 0.3, w: SLIDE_W - MARGIN * 2, h: 0.25, fontSize: 9, color: "036E3A", fontFace: "Calibri" });
+        slide.addText("Sample Website  |  Quality Improvement", { x: MARGIN, y: SLIDE_H - 0.3, w: SLIDE_W - MARGIN * 2, h: 0.25, fontSize: 9, color: "036E3A", fontFace: "Calibri" });
       }
     }
     const fname = (state.pages.length > 1 ? "qip-projects" : (state.pages[0].name || "qip-project"))
